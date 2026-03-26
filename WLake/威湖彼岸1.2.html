@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>威湖彼岸 · 1.2 高铁全站点·银行借贷·不夜城消费</title>
+<style>
+    *{box-sizing:border-box;font-family: "Segoe UI","华文细黑",sans-serif;}
+    body{background:#16242a;color:#0f1f22;margin:0;padding:18px;display:flex;justify-content:center;}
+    .game{width:980px;max-width:98%;background:#f0efe7;border-radius:18px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,0.6);}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:#1e3f4a;color:#f2e5d0;border-bottom:3px solid #b68b6e;}
+    .header h1{margin:0;font-weight:400;letter-spacing:2px;font-size:1.6rem;}
+    .badge{background:#7d5e4a;padding:6px 12px;border-radius:28px;font-weight:600;color:#f0e7d8;border:1px solid #b5987a;}
+    .main{display:flex;gap:18px;padding:18px;}
+    .left{flex:1;min-width:420px;}
+    .scene{background:#c9c1af;padding:20px;border-radius:14px;min-height:240px;position:relative;}
+    .scene .title{font-weight:700;margin-bottom:8px;color:#2d3e42;}
+    .scene .desc{background:#f5f0e6;padding:14px;border-radius:10px;color:#2d3e42;line-height:1.6;border-left:8px solid #b68b6e;}
+    .right{width:320px;min-width:260px;}
+    .panel{background:#e7dfd1;padding:14px;border-radius:12px;}
+    .inventory{display:flex;flex-wrap:wrap;gap:8px;padding:10px;border-radius:12px;background:#d4cbb9;margin-bottom:12px;border:1px solid #b8aa8e;}
+    .inv-item{background:#f2eadb;padding:6px 12px;border-radius:16px;font-weight:600;border:1px solid #9b8b72;}
+    .clues{background:#bdb39b;padding:10px;border-radius:12px;margin-bottom:12px;border:1px dashed #5f6f5e;color:#1e2f2f;}
+    .actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+    .btn{background:#ece3d3;border:2px solid #9f8d73;color:#2e3f44;padding:12px;border-radius:60px;cursor:pointer;font-weight:700;text-align:left;box-shadow:0 5px 0 #7f6e58;}
+    .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #7f6e58;}
+    .small{font-size:0.9rem;padding:8px 10px;border-radius:10px;}
+    .footer{background:#cbbca7;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-top:2px solid #ab9b84;color:#2d3e3b;}
+    .muted{opacity:0.9;color:#3b4b4b;}
+    .row{display:flex;gap:8px;align-items:center;}
+    .sep{height:1px;background:rgba(0,0,0,0.06);margin:12px 0;}
+    pre{white-space:pre-wrap;font-family:inherit;}
+    .modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:999;}
+    .modal .box{background:#fff;padding:18px;border-radius:12px;max-width:720px;width:96%;max-height:80vh;overflow:auto;}
+    .close{background:#6a5e4e;color:#efe6d6;border-radius:8px;padding:6px 10px;border:none;cursor:pointer;}
+    .statrow{display:flex;justify-content:space-between;margin-top:6px;padding:0 5px;}
+    .select-station{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+    .station-btn{background:#d4cbb9;border:1px solid #9f8d73;padding:8px;border-radius:24px;cursor:pointer;text-align:center;}
+    .station-btn:hover{background:#c0b39b;}
+</style>
+</head>
+<body>
+<div class="game" id="game">
+    <div class="header">
+        <h1>🌫️ 威湖彼岸 · 1.2（全站点·借贷·消费）</h1>
+        <div class="row">
+            <div class="badge" id="dayBadge">第 1 天 · 午后</div>
+            <div style="width:12px"></div>
+            <div class="muted" id="locationBadge">威湖行馆 · 大堂</div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="left">
+            <div class="scene" id="sceneBox">
+                <div class="title" id="sceneTitle">威湖行馆 · 大堂</div>
+                <div class="desc" id="sceneDesc">
+                    你站在威湖行馆酒店的大堂。阳光透过落地窗洒在湖面上，远处传来隐约的哨声。前台的工作人员好奇地打量着你。
+                </div>
+                <div class="sep"></div>
+                <div id="sceneExtra"></div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:700">📋 日程 / 任务</div>
+                    <div class="muted small" id="taskCount">0 条线索</div>
+                </div>
+                <div id="taskList" style="margin-top:10px;color:#2d3e42;line-height:1.5">
+                    — 无 — <span class="muted">（探索威湖各处）</span>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div style="font-weight:700;margin-bottom:8px">📚 日志 / 读物</div>
+                <div id="journal" style="color:#2d3e42;line-height:1.5;min-height:64px">
+                    欢迎来到威湖。你可以探索湖边、博物长廊、高铁、不夜城，使用世界银行APP管理资金。
+                </div>
+            </div>
+        </div>
+
+        <div class="right">
+            <div class="panel">
+                <div style="font-weight:700;margin-bottom:8px">🎒 物品 / 余额</div>
+                <div class="inventory" id="inventory">
+                    <div class="inv-item">📇 居留证 (16号)</div>
+                    <div class="inv-item" id="moneyDisplay">💳 余额: 30,000 YC</div>
+                </div>
+                <div class="statrow"><span>🧾 贷款:</span> <span id="loanDisplay">0 YC</span></div>
+                <div class="statrow"><span>🧭 倾向:</span> <span id="leaningDisplay">中立</span></div>
+                <div class="statrow"><span>🏦 财阀声望:</span> <span id="repDisplay">0</span></div>
+                <div class="statrow" style="margin-bottom:8px;"><span>⚡ 边界事件:</span> <span id="borderState">平静</span></div>
+
+                <div class="clues" id="cluePanel">
+                    <div style="font-weight:700">📜 线索簿</div>
+                    <div id="clueTags" style="margin-top:8px">（暂无线索）</div>
+                </div>
+
+                <div style="font-weight:700;margin-bottom:6px">🔘 可做的事</div>
+                <div class="actions" id="actions">
+                    <!-- 动态按钮 -->
+                </div>
+
+                <div style="margin-top:12px;display:flex;gap:8px;justify-content:space-between;">
+                    <button class="small" id="saveBtn">💾 保存进度</button>
+                    <button class="small" id="loadBtn">📂 加载进度</button>
+                    <button class="small" id="resetBtn">🔁 重新开始</button>
+                </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div style="font-weight:700">📎 世界银行 APP（快捷操作）</div>
+                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                    <button class="small" id="loanBtn">💰 申请贷款</button>
+                    <button class="small" id="repayBtn">💸 偿还贷款</button>
+                    <button class="small" id="bankInfoBtn">🏦 账户信息</button>
+                </div>
+                <div class="muted small" style="margin-top:6px;">贷款上限100,000 YC，日息5%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>⚓ 龙口西 · 威海卫湖</div>
+        <div class="row">
+            <button class="small" id="helpBtn">❔ 操作提示</button>
+            <div style="width:8px"></div>
+            <button class="small" id="endingBtn">🔚 退房离开</button>
+            <div style="width:8px"></div>
+            <div class="muted">🎐 外部居民 · 全站点版</div>
+        </div>
+    </div>
+</div>
+
+<div id="modalRoot" style="display:none;"></div>
+
+<script>
+/* ---- 威湖彼岸 1.2 扩展版 ----
+   高铁全站点：中城东、散庭南、沃野中央、神武、不夜城南、穗北、威海卫湖西、威湖行馆
+   每个站点有独特描述，并可返回高铁站或前往相关区域
+   货币系统：初始30000 YC，可贷款，日息5%，不夜城消费细化，财阀声望
+   保留原有倾向、边界事件、拍卖行、结局等
+*/
+const SAVE_KEY = 'weihu_bigan_v1.2';
+
+let state = {
+    day: 1,
+    timeOfDay: '午后',
+    sceneId: 'hotelLobby',
+    inventory: ['residentCard'],
+    money: 30000,
+    loan: 0,                // 贷款金额
+    clues: [],
+    flags: {
+        metTeacher: false,
+        canEnterMuseum: false,
+        visitedNightCity: false,
+        visitedMuseumUnderground: false,
+        leaning: null,       // 'LK' 龙口西, 'ST' 散庭, null 中立
+        tycoonRep: 0,
+        borderEventTriggered: false,
+        auctionUnlocked: false,
+        peaceDeed: false,
+    },
+    journal: [],
+    choices: {
+        provokedBorder: 0,
+        signedPeace: false,
+        metZhaoMing: false,
+        metLongSiyuan: false,
+        loanCount: 0,
+    }
+};
+
+// 物品与线索库
+const items = {
+    residentCard: { name: '居留证 (16号)', desc: '编号0202012012092116，外部居民凭证。' },
+    museumMap: { name: '博物长廊导览图', desc: '标注了地面展品与地下赵小姐画像位置。' },
+    oldCoin: { name: '旧YC硬币', desc: '磨损的一枚1YC硬币，边缘有四色粉泥残留。' },
+    trainTicket: { name: '高铁二等座车票', desc: '普通车票，无餐食。' },
+    firstClassTicket: { name: '高铁一等座车票', desc: '含肯德基套餐，可偶遇名人。' }
+};
+
+const clues = {
+    zhaoWan: { name: '赵婉 · 白发红瞳', desc: '龙口文明缔造者之一；博物长廊地下的画像与石碑中提及。' },
+    ironLine: { name: '铁线 · 边界', desc: '贯穿游艇会与博物长廊的金属线，标识威湖两侧归属。' },
+    electromagnetic: { name: '电磁纪念铁块', desc: '龙口西/散庭各有电磁纪念铁块，铭文记录研发日期。' },
+    twoWars: { name: '两次两国战争', desc: '博物长廊的石碑记录了冲突与和解。' },
+    borderIncident: { name: '边界摩擦', desc: '你亲历了一次边界事件，对局势有了更深体会。' },
+    zhaoMing: { name: '赵铭 · 财阀少爷', desc: '黑玉卡持有者，曾在直升机上骂人。' }
+};
+
+// 所有高铁站点及其描述（到达后显示）
+const stationInfo = {
+    zhongcheng: { name: '中城东站', desc: '离开车站，站外是瑞安校区，中城作为龙口西首都，此刻校园安静，似乎放假了。只有几个穿校服的学生匆匆走过。' },
+    santing: { name: '散庭南站', desc: '站台外是散庭共和国的核心区域，散庭重工的招牌在阳光下闪烁，但今天似乎没有活动，人烟稀少。' },
+    woye: { name: '沃野中央站', desc: '沃野中央站位于争议区，站外涂鸦着两国的旗帜，一天换一面旗的传说让这里氛围独特。远处有几家小贩，但多数店铺关着门。' },
+    shenwu: { name: '神武站', desc: '神武是龙口西的陪都，旧都的城墙遗址仍在。车站外老建筑与新建的民房交错，有种历史沉淀感。' },
+    buye: { name: '不夜城南站', desc: '站台直接通向不夜城教学楼的后门。白天这里很安静，但你知道晚上会热闹起来。可以前往不夜城五楼/六楼探索。' },
+    suibei: { name: '穗北站', desc: '穗北是发源地，车站玻璃穹顶有老照片。站外的穗园校区显得老旧，306教室的窗户紧闭，这里是建国之地。' },
+    weihai: { name: '威海卫湖西站', desc: '车站紧邻游艇会，走出站就能看到铁线和码头。海军舰艇停泊在港，宪兵在巡逻。可前往游艇会/博物长廊。' },
+    weihu: { name: '威湖行馆站', desc: '车站位于山体内，出口就是威湖行馆酒店的后门。从这里可方便返回酒店大堂。' }
+};
+
+// 场景定义（大幅修改高铁部分）
+const scenes = {
+    hotelLobby: {
+        id: 'hotelLobby',
+        title: '威湖行馆 · 大堂',
+        desc: '酒店大堂温暖安静。前台小姐正在整理文件，沙发上坐着一位戴眼镜的中年人（“老师”），窗外湖面如镜。',
+        actions: [
+            { text: '💬 和前台交谈', fn: talkReceptionist },
+            { text: '💬 与老师搭话', fn: talkTeacher },
+            { text: '🚪 前往游艇会 / 湖边', fn: gotoLake },
+            { text: '🚆 前往高铁站', fn: gotoHighRail },
+            { text: '📖 打开随身物品', fn: openInventory },
+            { text: '🧾 退房离开威湖', fn: attemptEnding }
+        ]
+    },
+    lakeEntrance: {
+        id: 'lakeEntrance',
+        title: '威海卫湖 · 铁线边界 / 游艇会码头',
+        desc: '湖边码头嵌着一条金属铁线，S 区为散庭，L 区为龙口西。两名小宪兵认真值守，游艇和各类小艇整齐停靠。',
+        actions: [
+            { text: '📋 向宪兵出示居留证', fn: showResidentCard },
+            { text: '🔍 观察铁线', fn: examineIronLine },
+            { text: '🚶 沿湖岸散步', fn: walkCoast },
+            { text: '⏳ 在湖边逗留（触发随机边界事件）', fn: lingerBorder },
+            { text: '🏛️ 前往博物长廊入口', fn: gotoMuseum },
+            { text: '🚆 前往高铁站', fn: gotoHighRail },
+            { text: '🔙 返回酒店', fn: backToHotel }
+        ]
+    },
+    museumHall: {
+        id: 'museumHall',
+        title: '博物长廊 · 地面层',
+        desc: '石碑写着“参与历史，创造历史，铭记历史，追寻历史”。展台有《建国宣言》、于凯帆肖像、电磁纪念铁块等展品。铁线从门口一直延伸。',
+        actions: [
+            { text: '📜 阅读《龙口西国民联邦国建国宣言》', fn: readDeclaration },
+            { text: '🧲 观察电磁纪念铁块', fn: examineIronBlock },
+            { text: '🖼️ 看于凯帆肖像（货币之父）', fn: lookAtYu },
+            { text: '⬇️ 前往地下层', fn: gotoMuseumUnderground },
+            { text: '🔙 返回码头', fn: gotoLake },
+            { text: '🚆 前往高铁站', fn: gotoHighRail }
+        ]
+    },
+    museumUnderground: {
+        id: 'museumUnderground',
+        title: '博物长廊 · 地下层',
+        desc: '玻璃地板下是一块黑色石碑。墙上挂着赵婉的现实风格画像——白发红瞳。展陈中有“两国宣言”与“和平龙口”装置艺术。',
+        actions: [
+            { text: '🕊️ 阅读黑碑宣言', fn: readStele },
+            { text: '👤 凝视赵婉画像', fn: gazeZhaoWan },
+            { text: '🔙 返回地面层', fn: backToMuseumMain },
+            { text: '🚆 前往高铁站', fn: gotoHighRail }
+        ]
+    },
+    // 高铁站大厅：购票中心，可选择站点并购买对应车票
+    highRail: {
+        id: 'highRail',
+        title: '龙口高铁 · 售票大厅（赛车俱乐部）',
+        desc: '大厅内有三台售票机，屏幕上显示着所有站点。你可以购买前往任意站点的车票，二等座8000YC，一等座10000YC（含肯德基）。',
+        actions: [
+            { text: '🎟️ 购买二等座车票 (8000YC)', fn: showStationSelectionForSecond },
+            { text: '🎟️ 购买一等座车票 (10000YC)', fn: showStationSelectionForFirst },
+            { text: '🚆 使用已有车票乘车', fn: useTicketToRide },
+            { text: '🔙 返回酒店', fn: backToHotel },
+            { text: '📖 打开随身物品', fn: openInventory }
+        ]
+    },
+    // 站点到达场景（动态生成，不预先定义所有，用函数统一处理）
+};
+
+// ----- 渲染与辅助函数 -----
+const el = id => document.getElementById(id);
+
+function formatYC(n){ return n.toLocaleString(); }
+function pushJournal(text){ state.journal.push(text); if (state.journal.length>30) state.journal.shift(); render(); }
+
+function render() {
+    const sc = scenes[state.sceneId];
+    if (!sc) return;
+    el('sceneTitle').textContent = sc.title;
+    el('sceneDesc').textContent = sc.desc;
+    el('locationBadge').textContent = sc.title;
+    el('dayBadge').textContent = `第 ${state.day} 天 · ${state.timeOfDay}`;
+
+    // 动态按钮
+    const actionsDiv = el('actions');
+    actionsDiv.innerHTML = '';
+    sc.actions.forEach(a => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = a.text;
+        btn.onclick = () => { a.fn(); };
+        actionsDiv.appendChild(btn);
+    });
+
+    // 物品栏
+    const inv = el('inventory');
+    inv.innerHTML = '';
+    state.inventory.forEach(id => {
+        const it = items[id];
+        const d = document.createElement('div');
+        d.className = 'inv-item';
+        d.textContent = (it ? it.name : id);
+        inv.appendChild(d);
+    });
+    // 余额单独加
+    const moneyDiv = document.createElement('div');
+    moneyDiv.className = 'inv-item';
+    moneyDiv.id = 'moneyDiv';
+    moneyDiv.textContent = `💳 余额: ${formatYC(state.money)} YC`;
+    inv.appendChild(moneyDiv);
+
+    // 贷款显示
+    el('loanDisplay').textContent = formatYC(state.loan) + ' YC';
+
+    // 倾向显示
+    let leanTxt = '中立';
+    if (state.flags.leaning === 'LK') leanTxt = '龙口西';
+    else if (state.flags.leaning === 'ST') leanTxt = '散庭';
+    el('leaningDisplay').textContent = leanTxt;
+    el('repDisplay').textContent = state.flags.tycoonRep;
+    let borderTxt = '平静';
+    if (state.choices.provokedBorder > 2) borderTxt = '紧张';
+    else if (state.choices.provokedBorder > 0) borderTxt = '微澜';
+    el('borderState').textContent = borderTxt;
+
+    // 线索
+    const clueDom = el('clueTags');
+    clueDom.innerHTML = '';
+    if (state.clues.length === 0) {
+        clueDom.textContent = '（暂无线索）';
+    } else {
+        state.clues.forEach(c => {
+            const span = document.createElement('div');
+            span.style.display = 'inline-block';
+            span.style.margin = '4px';
+            span.style.padding = '6px 10px';
+            span.style.borderRadius = '14px';
+            span.style.background = '#ece3d3';
+            span.style.border = '1px solid #847560';
+            span.textContent = clues[c].name;
+            clueDom.appendChild(span);
+        });
+    }
+
+    // 任务/日志简略
+    const tlist = el('taskList');
+    if (state.clues.length === 0 && state.journal.length === 0) {
+        tlist.innerHTML = '— 无 — <span class="muted">（探索各处）</span>';
+    } else {
+        const lines = [];
+        if (state.clues.length) lines.push('线索：' + state.clues.map(c=>clues[c].name).join('、'));
+        if (state.journal.length) lines.push('日志：' + state.journal.slice(-3).join(' / '));
+        tlist.innerHTML = lines.join('<br/>');
+    }
+    el('taskCount').textContent = `${state.clues.length} 条线索`;
+}
+
+// ----- 模态框 -----
+function showModal(html, buttons){
+    const root = el('modalRoot');
+    root.style.display = 'block';
+    root.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'modal';
+    const inner = document.createElement('div');
+    inner.className = 'box';
+    inner.innerHTML = `<div style="white-space:pre-wrap;color:#0f1f22">${html}</div><div style="height:12px"></div>`;
+    const btnRow = document.createElement('div');
+    btnRow.style.display='flex';
+    btnRow.style.gap='8px';
+    (buttons||[]).forEach(b=>{
+        const bt = document.createElement('button');
+        bt.className='close';
+        bt.textContent = b.txt || '确认';
+        bt.onclick = ()=>{ if (b.cb) b.cb(); closeModal(); };
+        btnRow.appendChild(bt);
+    });
+    if (!buttons || buttons.length===0){
+        const bt = document.createElement('button');
+        bt.className='close';
+        bt.textContent='关闭';
+        bt.onclick = closeModal;
+        btnRow.appendChild(bt);
+    }
+    inner.appendChild(btnRow);
+    box.appendChild(inner);
+    root.appendChild(box);
+}
+function closeModal(){ const root = el('modalRoot'); root.style.display='none'; root.innerHTML=''; }
+
+// ----- 原有动作扩展 -----
+function talkReceptionist(){
+    pushJournal('与前台交谈：前台认出你是 16 号外部居民，提醒海军演习与游艇会边界。');
+    showModal('前台小姐微笑：“16号外部居民？稀客。需要帮您预约高铁吗？或者您想知道今天的海军演习时间？”', [{txt:'好的，谢谢',cb:closeModal},{txt:'我先看看',cb:closeModal}]);
+    render();
+}
+
+function talkTeacher(){
+    pushJournal('与老师搭话：老师提到学生自治的海军、金融与不夜城。');
+    if (!state.flags.metTeacher) {
+        state.flags.metTeacher = true;
+        showModal('老师合上笔记本：“第一次来？这里的小学生自己建立了国家、海军，甚至银行。晚上可以去不夜城看看。你对龙口西和散庭有什么初步倾向吗？”',
+            [{txt:'我更倾向龙口西',cb:()=>{ chooseLeaning('LK'); }},
+             {txt:'散庭更有意思',cb:()=>{ chooseLeaning('ST'); }},
+             {txt:'保持中立',cb:()=>{ chooseLeaning(null); }}]);
+    } else {
+        showModal('老师微笑：“你已经知道不少了，继续探索吧。”', [{txt:'好',cb:closeModal}]);
+    }
+    render();
+}
+
+function chooseLeaning(side){
+    state.flags.leaning = side;
+    let msg = side==='LK'?'你倾向于龙口西国民联邦国。':(side==='ST'?'你倾向于散庭共和国。':'你决定保持中立，观察两者。');
+    pushJournal('选择了倾向：'+(side==='LK'?'龙口西':(side==='ST'?'散庭':'中立')));
+    showModal(msg, [{txt:'确认',cb:closeModal}]);
+    render();
+}
+
+function gotoLake(){ state.sceneId = 'lakeEntrance'; pushJournal('前往游艇会/湖边。'); render(); }
+function gotoMuseum(){
+    if (!state.flags.canEnterMuseum) {
+        showModal('门口挂着“今日周一，本馆闭馆”，但宪兵表示你若出示居留证可获入场许可。', [{txt:'出示居留证',cb:()=>{ showResidentCard(); closeModal(); }},{txt:'稍后再来',cb:closeModal}]);
+        return;
+    }
+    state.sceneId = 'museumHall';
+    pushJournal('进入博物长廊（地面层）。');
+    render();
+}
+function backToHotel(){ state.sceneId = 'hotelLobby'; pushJournal('返回酒店大堂。'); render(); }
+function showResidentCard(){
+    if (state.inventory.includes('residentCard')) {
+        state.flags.canEnterMuseum = true;
+        pushJournal('向宪兵出示居留证，获得博物长廊进入许可。');
+        showModal('你出示居留证。小宪兵核对后点头：“外部居民，可以进入。请勿跨越铁线。”', [{txt:'致谢',cb:closeModal}]);
+    } else {
+        showModal('你摸了摸口袋，发现居留证不见了！宪兵表示无法放行。', [{txt:'慌乱寻找',cb:closeModal}]);
+    }
+    render();
+}
+function examineIronLine(){
+    if (!state.clues.includes('ironLine')) {
+        state.clues.push('ironLine');
+        pushJournal('观察铁线，记录其为游艇会与博物长廊之间的分界。');
+    }
+    showModal('铁线嵌入石砖，蚀刻有“威海卫湖区边界线，请勿随意穿越”。这是象征性的边界。', [{txt:'记录',cb:closeModal}]);
+    render();
+}
+function walkCoast(){
+    pushJournal('沿湖岸散步，看到游艇编号与舰队编队。');
+    showModal('你沿着湖岸走，注意到游艇上写有 S1127-1 等编号，远处有小艇在演习。', [{txt:'继续',cb:closeModal},{txt:'返回',cb:backToHotel}]);
+}
+function lingerBorder(){
+    let r = Math.random();
+    if (r < 0.4) {
+        showModal('你在湖边坐了一会儿，只看到几只水鸟飞过。边界依旧平静。', [{txt:'起身',cb:closeModal}]);
+    } else if (r < 0.7) {
+        state.choices.provokedBorder += 1;
+        pushJournal('目击边界摩擦：双方激光互射，喊话声此起彼伏。');
+        if (!state.clues.includes('borderIncident')) state.clues.push('borderIncident');
+        showModal('突然，湖面上传来喊话声：“你们已进入我方领海！”紧接着激光束交错，一艘皮划艇被钩锁掀翻。你目睹了一次标准摩擦。', [{txt:'记录',cb:closeModal}]);
+    } else {
+        if (state.flags.leaning) {
+            let side = state.flags.leaning === 'LK' ? '龙口西' : '散庭';
+            showModal(`一名宪兵走过来，注意到你的居留证后说：“${side}的居民？最近边界敏感，请勿靠近铁线。”`, [{txt:'配合',cb:closeModal}]);
+        } else {
+            showModal('一名宪兵检查了你的居留证，提醒你注意边界。', [{txt:'点头',cb:closeModal}]);
+        }
+    }
+    render();
+}
+function readDeclaration(){
+    if (!state.clues.includes('zhaoWan')) state.clues.push('zhaoWan');
+    pushJournal('阅读《龙口西国民联邦国建国宣言》，署名赵婉等。');
+    showModal('《建国宣言》纸张泛黄，署名：赵婉、陈博翰、钱伟烨、任广岽。', [{txt:'记录',cb:closeModal}]);
+    render();
+}
+function examineIronBlock(){
+    if (!state.clues.includes('electromagnetic')) state.clues.push('electromagnetic');
+    pushJournal('观察电磁纪念铁块，读到铭文。');
+    showModal('一块手掌大的铁块，中间有穿透圆孔。铭文：“龙口4年12月3日 电磁威慑研发成功纪念”。旁边还有散庭版的纪念块。', [{txt:'继续',cb:closeModal}]);
+    render();
+}
+function lookAtYu(){
+    pushJournal('看于凯帆抽象肖像（货币之父）。');
+    showModal('一幅抽象肖像，下方注记：于凯帆——“货币之父”。YC 与银行体系的故事由此展开。', [{txt:'继续',cb:closeModal}]);
+}
+function gotoMuseumUnderground(){
+    state.sceneId = 'museumUnderground';
+    state.flags.visitedMuseumUnderground = true;
+    pushJournal('进入博物长廊地下层，见到赵婉画像与黑色石碑。');
+    render();
+}
+function readStele(){
+    if (!state.clues.includes('twoWars')) state.clues.push('twoWars');
+    pushJournal('阅读黑碑：记录两国战争与和平愿景。');
+    showModal('黑色石碑刻文：\n“4年中，我们经历了战争、分歧、争锋与和平。愿以后的10年中，两国和平永远不变。愿以后的100年中……赵婉小姐永远被人传颂。”', [{txt:'沉思',cb:closeModal}]);
+    if (!state.choices.signedPeace) {
+        state.choices.signedPeace = true;
+        state.flags.peaceDeed = true;
+    }
+    render();
+}
+function gazeZhaoWan(){
+    if (!state.clues.includes('zhaoWan')) state.clues.push('zhaoWan');
+    pushJournal('凝视赵婉画像。');
+    showModal('画像中的少女白发红瞳，目光宁静。许多游人将其称为“赵小姐”。', [{txt:'继续',cb:closeModal}]);
+    render();
+}
+function backToMuseumMain(){ state.sceneId = 'museumHall'; pushJournal('返回地面层。'); render(); }
+
+// ----- 高铁全站点功能 -----
+function gotoHighRail() {
+    state.sceneId = 'highRail';
+    pushJournal('前往高铁售票大厅');
+    render();
+}
+
+// 展示站点选择（二等座）
+function showStationSelectionForSecond() {
+    if (state.money < 8000) {
+        showModal('余额不足8000YC', [{txt:'知道了',cb:closeModal}]);
+        return;
+    }
+    let html = '<div style="font-weight:bold;margin-bottom:8px;">请选择目的地（二等座8000YC）</div>';
+    html += '<div class="select-station">';
+    const stations = [
+        {id:'zhongcheng', name:'中城东站'},
+        {id:'santing', name:'散庭南站'},
+        {id:'woye', name:'沃野中央站'},
+        {id:'shenwu', name:'神武站'},
+        {id:'buye', name:'不夜城南站'},
+        {id:'suibei', name:'穗北站'},
+        {id:'weihai', name:'威海卫湖西站'},
+        {id:'weihu', name:'威湖行馆站'}
+    ];
+    stations.forEach(s => {
+        html += `<div class="station-btn" onclick="purchaseAndRide('${s.id}', 'second')">${s.name}</div>`;
+    });
+    html += '</div>';
+    // 使用模态框显示选择界面，并暂存按钮事件（通过全局函数）
+    window.purchaseAndRide = function(stationId, ticketClass) {
+        closeModal();
+        let price = ticketClass === 'second' ? 8000 : 10000;
+        if (state.money < price) {
+            showModal('余额不足', [{txt:'关闭',cb:closeModal}]);
+            return;
+        }
+        state.money -= price;
+        // 增加车票物品（但乘车时消耗，此处直接跳转，不保留票）
+        pushJournal(`购买${ticketClass==='second'?'二等座':'一等座'}前往${stationInfo[stationId].name}，支付${price}YC`);
+        // 到达站点
+        arriveAtStation(stationId, ticketClass);
+    };
+    showModal(html, [{txt:'取消', cb:closeModal}]);
+}
+
+// 一等座选择
+function showStationSelectionForFirst() {
+    if (state.money < 10000) {
+        showModal('余额不足10000YC', [{txt:'知道了',cb:closeModal}]);
+        return;
+    }
+    let html = '<div style="font-weight:bold;margin-bottom:8px;">请选择目的地（一等座10000YC，含肯德基）</div>';
+    html += '<div class="select-station">';
+    const stations = [
+        {id:'zhongcheng', name:'中城东站'},
+        {id:'santing', name:'散庭南站'},
+        {id:'woye', name:'沃野中央站'},
+        {id:'shenwu', name:'神武站'},
+        {id:'buye', name:'不夜城南站'},
+        {id:'suibei', name:'穗北站'},
+        {id:'weihai', name:'威海卫湖西站'},
+        {id:'weihu', name:'威湖行馆站'}
+    ];
+    stations.forEach(s => {
+        html += `<div class="station-btn" onclick="purchaseAndRide('${s.id}', 'first')">${s.name}</div>`;
+    });
+    html += '</div>';
+    window.purchaseAndRide = function(stationId, ticketClass) {
+        closeModal();
+        let price = ticketClass === 'second' ? 8000 : 10000;
+        if (state.money < price) {
+            showModal('余额不足', [{txt:'关闭',cb:closeModal}]);
+            return;
+        }
+        state.money -= price;
+        pushJournal(`购买${ticketClass==='second'?'二等座':'一等座'}前往${stationInfo[stationId].name}，支付${price}YC`);
+        arriveAtStation(stationId, ticketClass);
+    };
+    showModal(html, [{txt:'取消', cb:closeModal}]);
+}
+
+// 使用已有车票乘车（如果有票）
+function useTicketToRide() {
+    let ticketType = null;
+    if (state.inventory.includes('firstClassTicket')) ticketType = 'first';
+    else if (state.inventory.includes('trainTicket')) ticketType = 'second';
+    if (!ticketType) {
+        showModal('你没有任何车票，请先购票。', [{txt:'返回',cb:closeModal}]);
+        return;
+    }
+    // 选择站点
+    let html = '<div style="font-weight:bold;margin-bottom:8px;">请选择目的地（使用已有车票）</div>';
+    html += '<div class="select-station">';
+    const stations = [
+        {id:'zhongcheng', name:'中城东站'},
+        {id:'santing', name:'散庭南站'},
+        {id:'woye', name:'沃野中央站'},
+        {id:'shenwu', name:'神武站'},
+        {id:'buye', name:'不夜城南站'},
+        {id:'suibei', name:'穗北站'},
+        {id:'weihai', name:'威海卫湖西站'},
+        {id:'weihu', name:'威湖行馆站'}
+    ];
+    stations.forEach(s => {
+        html += `<div class="station-btn" onclick="rideWithTicket('${s.id}', '${ticketType}')">${s.name}</div>`;
+    });
+    html += '</div>';
+    window.rideWithTicket = function(stationId, ticketType) {
+        closeModal();
+        // 移除车票
+        if (ticketType === 'first') {
+            state.inventory = state.inventory.filter(i => i !== 'firstClassTicket');
+        } else {
+            state.inventory = state.inventory.filter(i => i !== 'trainTicket');
+        }
+        pushJournal(`使用车票乘坐高铁前往${stationInfo[stationId].name}`);
+        arriveAtStation(stationId, ticketType);
+    };
+    showModal(html, [{txt:'取消', cb:closeModal}]);
+}
+
+// 到达站点处理
+function arriveAtStation(stationId, ticketClass) {
+    const info = stationInfo[stationId];
+    // 设置临时场景
+    // 我们动态创建场景并切换到该场景
+    const sceneId = 'station_' + stationId;
+    // 构建场景对象
+    let desc = info.desc;
+    if (ticketClass === 'first') {
+        desc += ' 由于你持有一等座票，在车上享用了肯德基套餐，味道不错。';
+    }
+    // 根据不同站点添加特殊互动
+    let actions = [];
+    if (stationId === 'buye') {
+        // 不夜城南站：可进入不夜城
+        actions.push({ text: '🏙️ 前往不夜城五楼/六楼', fn: ()=> { state.sceneId = 'nightCity'; pushJournal('从不夜城南站进入不夜城'); render(); } });
+    } else if (stationId === 'weihai') {
+        // 威海卫湖西站：可前往游艇会/博物长廊
+        actions.push({ text: '🚤 前往游艇会/湖边', fn: ()=> { state.sceneId = 'lakeEntrance'; pushJournal('从威海卫湖西站前往湖边'); render(); } });
+        actions.push({ text: '🏛️ 前往博物长廊', fn: ()=> { 
+            if (!state.flags.canEnterMuseum) {
+                showModal('需要先向宪兵出示居留证才能进入博物长廊。', [{txt:'明白',cb:closeModal}]);
+                return;
+            }
+            state.sceneId = 'museumHall'; pushJournal('从威海卫湖西站前往博物长廊'); render(); 
+        } });
+    } else if (stationId === 'weihu') {
+        // 威湖行馆站：回酒店
+        actions.push({ text: '🏨 返回威湖行馆酒店', fn: backToHotel });
+    }
+    // 通用返回高铁站
+    actions.push({ text: '🚆 返回高铁站', fn: ()=> { state.sceneId = 'highRail'; pushJournal('返回高铁站'); render(); } });
+    // 如果有其他需求可加
+    if (stationId !== 'buye' && stationId !== 'weihai' && stationId !== 'weihu') {
+        // 普通站点只有返回高铁站
+        // 但可以加一点额外互动
+        actions.push({ text: '📸 四处看看', fn: ()=> { showModal(info.desc + ' 你拍了些照片，没什么特别的事发生。', [{txt:'返回',cb:closeModal}]); } });
+    }
+    // 创建临时场景
+    const tempScene = {
+        id: sceneId,
+        title: info.name,
+        desc: desc,
+        actions: actions
+    };
+    // 注册到 scenes 对象（临时）
+    scenes[sceneId] = tempScene;
+    state.sceneId = sceneId;
+    pushJournal(`抵达${info.name}`);
+    render();
+}
+
+// ----- 不夜城消费细化 -----
+function buySkewer(){
+    if (state.money < 30) { showModal('余额不足', [{txt:'知道了',cb:closeModal}]); return; }
+    state.money -= 30;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 1);
+    pushJournal('在不夜城吃羊肉串，花费30YC，声望+1');
+    showModal('你吃了一串羊肉串，香辣可口。', [{txt:'继续',cb:closeModal}]);
+    render();
+}
+function buyMilkTea(){
+    if (state.money < 28) { showModal('余额不足', [{txt:'知道了',cb:closeModal}]); return; }
+    state.money -= 28;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 1);
+    pushJournal('买了一杯奶茶，28YC，声望+1');
+    showModal('奶茶甜而不腻，是不夜城的人气饮品。', [{txt:'继续',cb:closeModal}]);
+    render();
+}
+function buyWings(){
+    if (state.money < 45) { showModal('余额不足', [{txt:'知道了',cb:closeModal}]); return; }
+    state.money -= 45;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 1);
+    pushJournal('点了奥尔良烤翅，45YC，声望+1');
+    showModal('烤翅外焦里嫩，你忍不住舔了舔手指。', [{txt:'继续',cb:closeModal}]);
+    render();
+}
+function buyBook(){
+    if (state.money < 200) { showModal('余额不足', [{txt:'知道了',cb:closeModal}]); return; }
+    state.money -= 200;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 2);
+    if (!state.inventory.includes('oldCoin')) state.inventory.push('oldCoin');
+    pushJournal('购买历史书，获赠旧YC硬币，花费200YC，声望+2');
+    showModal('你买下历史书，店主送了一枚旧YC硬币作为小礼物。', [{txt:'收藏',cb:closeModal}]);
+    render();
+}
+function bankOpenAccount(){
+    showModal('世界银行：外部居民可开户，初始限额 1,000,000 YC（需居留证）。是否开户？', [
+        {txt:'开户', cb: ()=>{
+            if (!state.inventory.includes('residentCard')) {
+                showModal('开户失败：需要居留证。', [{txt:'明白',cb:closeModal}]);
+            } else {
+                pushJournal('在世界银行开户');
+                showModal('开户成功：世界银行账户创建。提醒：银行卡分等级，黑玉/彩玉为富豪专属。', [{txt:'知道了',cb:closeModal}]);
+            }
+        }},
+        {txt:'取消', cb: closeModal}
+    ]);
+}
+function tryAuction(){
+    if (state.flags.tycoonRep < 30) {
+        showModal('你的财阀声望不足30，无法进入拍卖行。多在不夜城消费吧。', [{txt:'好吧',cb:closeModal}]);
+        return;
+    }
+    if (!state.clues.includes('zhaoMing')) state.clues.push('zhaoMing');
+    pushJournal('进入拍卖行，目睹赵铭刷黑玉卡');
+    showModal('拍卖行门口，一个学生刷出黑玉卡，余额 1189亿 YC。服务生恭敬道：“赵少，您请。”你见证了财阀的排场。', [{txt:'惊叹',cb:closeModal}]);
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 5);
+    render();
+}
+function antiqueShop(){
+    showModal('你走进一家文物店，架子上摆着旧徽章、老照片。老板说：“这些都是博物长廊的复制品，真品都在那边。”', [{txt:'离开',cb:closeModal}]);
+}
+
+// 不夜城场景重定义（增加更多选项）
+// 注意：不夜城场景已存在，我们需要在场景actions里添加更多按钮，但原有actions是数组，我们可以动态替换？
+// 为了避免覆盖，我们可以直接修改场景定义对象。在初始化后修改。
+scenes.nightCity = {
+    id: 'nightCity',
+    title: '不夜城 · 五楼 / 六楼 夜市商业区',
+    desc: '教学楼的五楼改造成夜市：书店、奶茶、烧烤、文物店。六楼是高端区：西餐厅、拍卖行与银行支行。',
+    actions: [
+        { text: '🍢 吃羊肉串（30YC）', fn: buySkewer },
+        { text: '🧋 买奶茶（28YC）', fn: buyMilkTea },
+        { text: '🍗 奥尔良烤翅（45YC）', fn: buyWings },
+        { text: '📚 逛书店 / 买历史书（200YC）', fn: buyBook },
+        { text: '🏦 世界银行开户', fn: bankOpenAccount },
+        { text: '🏺 逛逛文物店', fn: antiqueShop },
+        { text: '⬆️ 前往六楼拍卖行（需财阀声望≥30）', fn: tryAuction },
+        { text: '🔙 返回高铁站', fn: ()=>{ state.sceneId = 'highRail'; pushJournal('返回高铁站'); render(); } },
+        { text: '🚪 返回威湖行馆站（需车票）', fn: ()=>{
+            if (!state.inventory.includes('trainTicket') && !state.inventory.includes('firstClassTicket')) {
+                showModal('你没有车票，无法乘车。请先购票。', [{txt:'了解',cb:closeModal}]);
+                return;
+            }
+            // 直接使用车票回行馆站
+            let ticketType = state.inventory.includes('firstClassTicket')?'first':'second';
+            if (ticketType === 'first') state.inventory = state.inventory.filter(i=>i!=='firstClassTicket');
+            else state.inventory = state.inventory.filter(i=>i!=='trainTicket');
+            pushJournal('使用车票返回威湖行馆站');
+            arriveAtStation('weihu', ticketType);
+        } }
+    ]
+};
+
+// ----- 银行借贷功能 -----
+function applyLoan() {
+    let maxLoan = 100000 - state.loan;
+    if (maxLoan <= 0) {
+        showModal('你已达到贷款上限（100,000 YC）。', [{txt:'关闭',cb:closeModal}]);
+        return;
+    }
+    // 简单贷款：每次最多贷50000，但不超过上限
+    let amount = Math.min(50000, maxLoan);
+    state.loan += amount;
+    state.money += amount;
+    state.choices.loanCount++;
+    pushJournal(`申请贷款 ${amount} YC，当前负债 ${state.loan} YC`);
+    showModal(`贷款成功！你获得了 ${amount} YC。记得及时还款，日息5%会影响结局。`, [{txt:'明白',cb:closeModal}]);
+    render();
+}
+function repayLoan() {
+    if (state.loan <= 0) {
+        showModal('你没有贷款需要偿还。', [{txt:'关闭',cb:closeModal}]);
+        return;
+    }
+    let maxRepay = Math.min(state.money, state.loan);
+    if (maxRepay <= 0) {
+        showModal('余额不足，无法还款。', [{txt:'关闭',cb:closeModal}]);
+        return;
+    }
+    state.money -= maxRepay;
+    state.loan -= maxRepay;
+    pushJournal(`偿还贷款 ${maxRepay} YC，剩余负债 ${state.loan} YC`);
+    showModal(`还款成功！你偿还了 ${maxRepay} YC。`, [{txt:'好的',cb:closeModal}]);
+    render();
+}
+function bankInfo() {
+    showModal(`世界银行账户信息\n余额: ${formatYC(state.money)} YC\n贷款: ${formatYC(state.loan)} YC\n贷款上限: 100,000 YC\n日息: 5% (影响结局)`, [{txt:'关闭',cb:closeModal}]);
+}
+
+// 绑定银行按钮
+el('loanBtn').onclick = applyLoan;
+el('repayBtn').onclick = repayLoan;
+el('bankInfoBtn').onclick = bankInfo;
+
+// ----- 结局系统 -----
+function attemptEnding(){
+    // 先计算利息（如果贷款>0，按5%扣除，但结局时可能直接扣？为了简化，结局时检查负债情况）
+    let msg = '';
+    // 负债高且未促进和平可能坏结局
+    if (state.loan > 50000 && !state.choices.signedPeace) {
+        msg = '【破产统派结局】你负债累累，且未参与和平进程，最终被世界银行列入黑名单，无法继续旅行。龙口文明对你关上了大门。';
+    } else if (state.choices.provokedBorder >= 3 && !state.choices.signedPeace) {
+        msg = '【统派结局】由于你多次挑衅边界且拒绝和平象征，统派势力抬头。高铁中断，博物长廊关闭，铁线无人维护。龙口文明陷入冰封。';
+    } else if (state.choices.signedPeace && state.flags.tycoonRep >= 50) {
+        msg = '【财阀和平结局】你以外部居民身份促进和平，同时获得财阀尊重。两国在你离开后签署了永久友好协议，高铁延伸至新大陆。';
+    } else if (state.flags.leaning === 'LK' && state.clues.length > 3) {
+        msg = '【龙口西友好结局】你深入了解了龙口西的历史，得到龙思远总统赠送的芋头糕配方。愿你记住这个联邦。';
+    } else if (state.flags.leaning === 'ST' && state.clues.length > 3) {
+        msg = '【散庭科技结局】你与散庭重工建立了良好关系，获赠电磁枪模型。愿你记住这个科技共和国。';
+    } else {
+        msg = '【普通结局】你结束了威湖之旅，带着对龙口文明的记忆离开。铁线依旧，期待你再次归来。';
+    }
+    showModal(msg + '\n\n游戏结束，感谢游玩。可重新开始继续探索。', [{txt:'重新开始', cb: resetGame}, {txt:'关闭', cb: closeModal}]);
+}
+
+// 存档/读档/重置
+function saveGame(){
+    const copy = JSON.parse(JSON.stringify(state));
+    localStorage.setItem(SAVE_KEY, JSON.stringify(copy));
+    alert('✅ 进度已保存（本地）。');
+}
+function loadGame(){
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) { alert('未找到存档。'); return; }
+    try {
+        const loaded = JSON.parse(raw);
+        state = loaded;
+        alert('📖 存档加载成功。');
+        render();
+    } catch (e) {
+        alert('加载失败：' + e.message);
+    }
+}
+function resetGame(){
+    if (!confirm('确认要重新开始吗？（将清除当前进度）')) return;
+    state = {
+        day:1,timeOfDay:'午后',sceneId:'hotelLobby',
+        inventory:['residentCard'],money:30000,loan:0,clues:[],
+        flags:{ metTeacher:false, canEnterMuseum:false, visitedNightCity:false, visitedMuseumUnderground:false,
+                leaning:null, tycoonRep:0, borderEventTriggered:false, auctionUnlocked:false, peaceDeed:false },
+        journal:[],
+        choices:{ provokedBorder:0, signedPeace:false, metZhaoMing:false, metLongSiyuan:false, loanCount:0 }
+    };
+    render();
+    alert('已重置。');
+}
+
+function openInventory(){
+    let html = '随身物品：\n' + state.inventory.map(i=> (items[i]?items[i].name:i)).join('\n') + '\n\n余额：' + formatYC(state.money) + ' YC';
+    showModal(html, [{txt:'关闭',cb:closeModal}]);
+}
+
+// 帮助与快速结局测试
+el('helpBtn').onclick = ()=>{
+    showModal('操作提示：\n- 点击右侧动作进行交互。\n- 倾向选择影响后续事件。\n- 消费增加财阀声望，解锁拍卖行。\n- 边界逗留可能触发事件，积累挑衅影响结局。\n- 参观石碑可获得和平象征。\n- 高铁可购买前往任意站点，到达后只能返回或前往特定区域。\n- 世界银行APP可贷款/还款。\n- 退房触发结局。', [{txt:'明白',cb:closeModal}]);
+};
+el('endingBtn').onclick = attemptEnding;
+
+el('saveBtn').onclick = saveGame;
+el('loadBtn').onclick = loadGame;
+el('resetBtn').onclick = resetGame;
+
+render();
+pushJournal('欢迎来到威湖彼岸 1.2 全站点版。初始资金30,000 YC，可贷款，尽情探索吧。');
+</script>
+</body>
+</html>

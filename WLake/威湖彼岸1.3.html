@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>威湖彼岸 · 1.3</title>
+<style>
+    *{box-sizing:border-box;font-family: "Segoe UI","华文细黑",sans-serif;}
+    body{background:#16242a;color:#0f1f22;margin:0;padding:18px;display:flex;justify-content:center;}
+    .game{width:980px;max-width:98%;background:#f0efe7;border-radius:18px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,0.6);}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:#1e3f4a;color:#f2e5d0;border-bottom:3px solid #b68b6e;}
+    .header h1{margin:0;font-weight:400;letter-spacing:2px;font-size:1.6rem;}
+    .badge{background:#7d5e4a;padding:6px 12px;border-radius:28px;font-weight:600;color:#f0e7d8;border:1px solid #b5987a;}
+    .main{display:flex;gap:18px;padding:18px;}
+    .left{flex:1;min-width:420px;}
+    .scene{background:#c9c1af;padding:20px;border-radius:14px;min-height:240px;position:relative;}
+    .scene .title{font-weight:700;margin-bottom:8px;color:#2d3e42;}
+    .scene .desc{background:#f5f0e6;padding:14px;border-radius:10px;color:#2d3e42;line-height:1.6;border-left:8px solid #b68b6e;}
+    .right{width:320px;min-width:260px;}
+    .panel{background:#e7dfd1;padding:14px;border-radius:12px;}
+    .inventory{display:flex;flex-wrap:wrap;gap:8px;padding:10px;border-radius:12px;background:#d4cbb9;margin-bottom:12px;border:1px solid #b8aa8e;}
+    .inv-item{background:#f2eadb;padding:6px 12px;border-radius:16px;font-weight:600;border:1px solid #9b8b72;word-break:break-word;max-width:100%;}
+    .clues{background:#bdb39b;padding:10px;border-radius:12px;margin-bottom:12px;border:1px dashed #5f6f5e;color:#1e2f2f;}
+    .actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+    .btn{background:#ece3d3;border:2px solid #9f8d73;color:#2e3f44;padding:12px;border-radius:60px;cursor:pointer;font-weight:700;text-align:left;box-shadow:0 5px 0 #7f6e58;}
+    .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #7f6e58;}
+    .btn.disabled{opacity:0.5;pointer-events:none;background:#ccc;}
+    .small{font-size:0.9rem;padding:8px 10px;border-radius:10px;}
+    .footer{background:#cbbca7;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-top:2px solid #ab9b84;color:#2d3e3b;}
+    .muted{opacity:0.9;color:#3b4b4b;}
+    .row{display:flex;gap:8px;align-items:center;}
+    .sep{height:1px;background:rgba(0,0,0,0.06);margin:12px 0;}
+    .modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:999;}
+    .modal .box{background:#fff;padding:18px;border-radius:12px;max-width:720px;width:96%;max-height:80vh;overflow:auto;}
+    .close{background:#6a5e4e;color:#efe6d6;border-radius:8px;padding:6px 10px;border:none;cursor:pointer;}
+    .statrow{display:flex;justify-content:space-between;margin-top:6px;padding:0 5px;}
+    .select-station{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+    .station-btn{background:#d4cbb9;border:1px solid #9f8d73;padding:8px;border-radius:24px;cursor:pointer;text-align:center;}
+    .station-btn:hover{background:#c0b39b;}
+    .number-picker{display:flex;justify-content:center;align-items:center;gap:15px;margin:15px 0;}
+    .number-picker button{width:40px;height:40px;font-size:20px;background:#ece3d3;border:2px solid #9f8d73;border-radius:30px;cursor:pointer;}
+    .number-picker span{font-size:22px;font-weight:bold;min-width:50px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="game" id="game">
+    <div class="header">
+        <h1>🌫️ 威湖彼岸 · 1.3</h1>
+        <div class="row">
+            <div class="badge" id="dayBadge">第 1 天 12:00</div>
+            <div style="width:12px"></div>
+            <div class="muted" id="locationBadge">威湖行馆 · 大堂</div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="left">
+            <div class="scene" id="sceneBox">
+                <div class="title" id="sceneTitle">威湖ZH行馆酒店 · 大堂</div>
+                <div class="desc" id="sceneDesc">
+                    你站在威湖行馆酒店的大堂。阳光透过落地窗洒在湖面上，远处传来隐约的哨声。前台的工作人员好奇地打量着你。
+                </div>
+                <div class="sep"></div>
+                <div id="sceneExtra"></div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:700">📋 日程 / 任务</div>
+                    <div class="muted small" id="taskCount">0 条线索</div>
+                </div>
+                <div id="taskList" style="margin-top:10px;color:#2d3e42;line-height:1.5">
+                    — 无 — <span class="muted">（探索威湖各处）</span>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div style="font-weight:700;margin-bottom:8px">📚 日志 / 读物</div>
+                <div id="journal" style="color:#2d3e42;line-height:1.5;min-height:64px">
+                    欢迎来到威湖。你可以探索湖边、博物长廊、高铁、不夜城。时间实时流逝，注意高铁和不夜城的开放时段。
+                </div>
+            </div>
+        </div>
+
+        <div class="right">
+            <div class="panel">
+                <div style="font-weight:700;margin-bottom:8px">🎒 物品 / 余额</div>
+                <div class="inventory" id="inventory">
+                </div>
+                <div class="statrow"><span>🧾 贷款:</span> <span id="loanDisplay">0 YC</span></div>
+                <div class="statrow"><span>🧭 倾向:</span> <span id="leaningDisplay">中立</span></div>
+                <div class="statrow"><span>🏦 财阀声望:</span> <span id="repDisplay">0</span></div>
+                <div class="statrow" style="margin-bottom:8px;"><span>⚡ 边界事件:</span> <span id="borderState">平静</span></div>
+
+                <div class="clues" id="cluePanel">
+                    <div style="font-weight:700">📜 线索簿</div>
+                    <div id="clueTags" style="margin-top:8px">（暂无线索）</div>
+                </div>
+
+                <div style="font-weight:700;margin-bottom:6px">🔘 可做的事</div>
+                <div class="actions" id="actions">
+                </div>
+
+                <div style="margin-top:12px;display:flex;gap:8px;justify-content:space-between;">
+                    <button class="small" id="saveBtn">💾 保存进度</button>
+                    <button class="small" id="loadBtn">📂 加载进度</button>
+                    <button class="small" id="resetBtn">🔁 重新开始</button>
+                </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div style="font-weight:700">📎 世界银行 APP（快捷操作）</div>
+                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                    <button class="small" id="loanBtn">💰 申请贷款</button>
+                    <button class="small" id="repayBtn">💸 偿还贷款</button>
+                    <button class="small" id="bankInfoBtn">🏦 账户信息</button>
+                </div>
+                <div class="muted small" style="margin-top:6px;">贷款上限100,000 YC，日息5%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>⚓ 龙口西 · 威海卫湖</div>
+        <div class="row">
+            <button class="small" id="helpBtn">❔ 操作提示</button>
+            <div style="width:8px"></div>
+            <button class="small" id="endingBtn">🔚 退房离开</button>
+            <div style="width:8px"></div>
+            <div class="muted">🎐 外部居民 · 1.3实时版</div>
+        </div>
+    </div>
+</div>
+
+<div id="modalRoot" style="display:none;"></div>
+
+<script>
+/* ---- 威湖彼岸 1.3----
+   改动说明：
+   • 时间改为24小时制，每0.5秒游戏时间增加1分钟（实时流逝）
+   • 移除am/pm，显示“第X天 HH:MM”
+   • 高铁运营/不夜城开放根据实时时间判定
+   • 酒店大堂增加「前往客房」选项
+   • 客房内可洗澡（每日一次，声望+1），可睡觉（仅19:00后，否则睡不着）
+   • 睡觉：点击后等待3秒，时间跳转至次日07:00
+   • 所有原有advanceTime调用改为通过addGameMinutes统一推进，避免重复跨天重置
+   • 打工次数重置、洗澡标记随天数自动更新
+*/
+const SAVE_KEY = 'weihu_bigan_v1.3_real';
+
+// 游戏开始时间：第一天 00:00
+const START_MINUTES = 12 * 0; // 00:00
+
+let state = {
+    day: 1,
+    gameMinutes: START_MINUTES,
+    sceneId: 'hotelLobby',
+    inventory: ['residentCard'],
+    money: 30000,
+    loan: 0,
+    clues: [],
+    flags: {
+        metTeacher: false,
+        canEnterMuseum: false,
+        visitedNightCity: false,
+        visitedMuseumUnderground: false,
+        leaning: null,       // 'LK' 龙口西, 'ST' 散庭, null 中立
+        tycoonRep: 0,
+        borderEventTriggered: false,
+        auctionUnlocked: false,
+        peaceDeed: false,
+        workCount: 0,        // 当天打工次数
+        // lastWorkDay 不再使用，改为通过day比较重置
+        showerDay: 0,        // 记录上次洗澡的天数
+    },
+    journal: [],
+    choices: {
+        provokedBorder: 0,
+        signedPeace: false,
+        metZhaoMing: false,
+        metLongSiyuan: false,
+        loanCount: 0,
+    }
+};
+
+// 物品与线索库
+const items = {
+    residentCard: { name: '📇 居留证 (16) 020201201207090016', desc: '外部居民凭证。编号：020201201207090016' },
+    museumMap: { name: '博物长廊导览图', desc: '标注了地面展品与地下赵小姐画像位置。' },
+    oldCoin: { name: '旧YC硬币', desc: '磨损的一枚1YC硬币，边缘有四色粉泥残留。' },
+    trainTicket: { name: '高铁二等座车票', desc: '普通车票，无餐食。' },
+    firstClassTicket: { name: '高铁一等座车票', desc: '含肯德基套餐，可偶遇名人。' }
+};
+
+const clues = {
+    zhaoWan: { name: '赵婉 · 白发红瞳', desc: '龙口文明缔造者之一；博物长廊地下的画像与石碑中提及。' },
+    ironLine: { name: '铁线 · 边界', desc: '贯穿游艇会与博物长廊的金属线，标识威湖两侧归属。' },
+    electromagnetic: { name: '电磁纪念铁块', desc: '龙口西/散庭各有电磁纪念铁块，铭文记录研发日期。' },
+    twoWars: { name: '两次两国战争', desc: '博物长廊的石碑记录了冲突与和解。' },
+    borderIncident: { name: '边界摩擦', desc: '你亲历了一次边界事件，对局势有了更深体会。' },
+    zhaoMing: { name: '赵铭 · 财阀少爷', desc: '黑玉卡持有者，曾在直升机上骂人。' }
+};
+
+// 所有高铁站点及其描述
+const stationInfo = {
+    zhongcheng: { name: '中城东站', desc: '离开车站，站外是瑞安校区，中城作为龙口西首都，此刻校园安静，似乎放假了。只有几个穿校服的学生匆匆走过。' },
+    santing: { name: '散庭南站', desc: '站台外是散庭共和国的核心区域，散庭重工的招牌在阳光下闪烁，但今天似乎没有活动，人烟稀少。' },
+    woye: { name: '沃野中央站', desc: '沃野中央站位于争议区，站外涂鸦着两国的旗帜，一天换一面旗的传说让这里氛围独特。远处有几家小贩，但多数店铺关着门。' },
+    shenwu: { name: '神武站', desc: '神武是龙口西的陪都，旧都的城墙遗址仍在。车站外老建筑与新建的民房交错，有种历史沉淀感。' },
+    buye: { name: '不夜城南站', desc: '站台直接通向不夜城教学楼的后门。白天这里很安静，但你知道晚上会热闹起来。可以前往不夜城五楼/六楼探索。' },
+    suibei: { name: '穗北站', desc: '穗北是发源地，车站玻璃穹顶有老照片。站外的穗园校区显得老旧，306教室的窗户紧闭，这里是建国之地。' },
+    weihai: { name: '威海卫湖西站', desc: '车站紧邻游艇会，走出站就能看到铁线和码头。海军舰艇停泊在港，宪兵在巡逻。可前往游艇会/博物长廊。' },
+    weihu: { name: '威湖行馆站', desc: '车站位于山体内，出口就是威湖行馆酒店的后门。从这里可方便返回酒店大堂。' }
+};
+
+// 基础场景定义（后续会动态添加客房、车站临时场景）
+const scenes = {
+    hotelLobby: {
+        id: 'hotelLobby',
+        title: '威湖行馆 · 大堂',
+        desc: '酒店大堂温暖安静。前台小姐正在整理文件，沙发上坐着一位戴眼镜的中年人（“老师”），窗外湖面如镜。',
+        actions: [
+            { text: '💬 和前台交谈', fn: talkReceptionist },
+            { text: '💬 与老师搭话', fn: talkTeacher },
+            { text: '🚪 前往游艇会 / 湖边', fn: gotoLake },
+            { text: '🚆 前往高铁站', fn: gotoHighRail },
+            { text: '🛏️ 前往客房', fn: gotoHotelRoom },
+            { text: '📖 打开随身物品', fn: openInventory },
+            { text: '🧾 退房离开威湖', fn: attemptEnding }
+        ]
+    },
+    hotelRoom: {
+        id: 'hotelRoom',
+        title: '威湖行馆 · 客房',
+        desc: '你的房间在五楼，窗外能看见湖景。床铺整洁，浴室有热水。',
+        actions: [
+            { text: '🚿 洗澡 (一日一次，声望+1)', fn: takeShower },
+            { text: '😴 睡觉 (仅限19:00后，3秒后到次日7:00)', fn: sleepInRoom },
+            { text: '🔙 返回大堂', fn: backToHotel }
+        ]
+    },
+    lakeEntrance: {
+        id: 'lakeEntrance',
+        title: '威海卫湖 · 铁线边界 / 游艇会码头',
+        desc: '湖边码头嵌着一条金属铁线，S 区为散庭，L 区为龙口西。两名小宪兵认真值守，游艇和各类小艇整齐停靠。',
+        actions: [
+            { text: '📋 向宪兵出示居留证', fn: showResidentCard },
+            { text: '🔍 观察铁线', fn: examineIronLine },
+            { text: '🚶 沿湖岸散步', fn: walkCoast },
+            { text: '⏳ 在湖边逗留（触发随机边界事件）', fn: lingerBorder },
+            { text: '🏛️ 前往博物长廊入口', fn: gotoMuseum },
+            { text: '🚆 前往高铁站', fn: gotoHighRail },
+            { text: '🔙 返回酒店', fn: backToHotel }
+        ]
+    },
+    museumHall: {
+        id: 'museumHall',
+        title: '博物长廊 · 地面层',
+        desc: '石碑写着“参与历史，创造历史，铭记历史，追寻历史”。展台有《建国宣言》、于凯帆肖像、电磁纪念铁块等展品。铁线从门口一直延伸。',
+        actions: [
+            { text: '📜 阅读《龙口西国民联邦国建国宣言》', fn: readDeclaration },
+            { text: '🧲 观察电磁纪念铁块', fn: examineIronBlock },
+            { text: '🖼️ 看于凯帆肖像（货币之父）', fn: lookAtYu },
+            { text: '⬇️ 前往地下层', fn: gotoMuseumUnderground },
+            { text: '🚆 前往高铁站', fn: gotoHighRail },
+            { text: '🔙 返回码头', fn: gotoLake },
+        ]
+    },
+    museumUnderground: {
+        id: 'museumUnderground',
+        title: '博物长廊 · 地下层',
+        desc: '玻璃地板下是一块黑色石碑。墙上挂着赵婉的现实风格画像——白发红瞳。展陈中有“两国宣言”与“和平龙口”装置艺术。',
+        actions: [
+            { text: '🕊️ 阅读黑碑宣言', fn: readStele },
+            { text: '👤 凝视赵婉画像', fn: gazeZhaoWan },
+            { text: '🔙 返回地面层', fn: backToMuseumMain },
+        ]
+    },
+    highRail: {
+        id: 'highRail',
+        title: '龙口高铁 · 售票大厅（赛车俱乐部）',
+        desc: '大厅内有三台售票机，屏幕上显示着所有站点。你可以购买前往任意站点的车票，二等座8000YC，一等座10000YC（含肯德基）。',
+        actions: [
+            { text: '🎟️ 购买二等座车票 (8000YC)', fn: showStationSelectionForSecond },
+            { text: '🎟️ 购买一等座车票 (10000YC)', fn: showStationSelectionForFirst },
+            { text: '🚆 使用已有车票乘车', fn: useTicketToRide },
+            { text: '📖 打开随身物品', fn: openInventory }
+        ]
+    },
+};
+
+// ----- 新增：不夜城场景 (引用之前定义的函数，放在后面) -----
+scenes.nightCity = {
+    id: 'nightCity',
+    title: '不夜城 · 五楼 / 六楼 夜市商业区',
+    desc: '教学楼的五楼改造成夜市：书店、奶茶、烧烤、文物店。六楼是高端区：西餐厅、拍卖行与银行支行。',
+    actions: [
+        { text: '🍢 买羊肉串 (30YC/串, 声望+1, 最少5串)', fn: buySkewer },
+        { text: '🧋 买奶茶 (28YC/杯, 声望+1)', fn: buyMilkTea },
+        { text: '🍗 奥尔良烤翅 (45YC/份, 声望+1)', fn: buyWings },
+        { text: '📚 逛书店 / 买历史书 (200YC, 声望+2, 赠旧币)', fn: buyBook },
+        { text: '🏦 世界银行开户', fn: bankOpenAccount },
+        { text: '🏺 逛逛文物店', fn: antiqueShop },
+        { text: '⬆️ 前往六楼拍卖行 (需声望≥30)', fn: tryAuction },
+        { text: '🍽️ 西餐厅洗碗 (+200YC, +1声望, 耗时1h)', fn: workDish },
+        { text: '📰 龙口西报社投稿 (+250YC, +1声望, 需倾向LK或历史知识)', fn: workNewspaper },
+        { text: '🔧 散庭重工兼职 (+300YC, +1声望, 需倾向ST或旧硬币)', fn: workSanting },
+        { text: '🏛️ 拍卖行临时工 (+500YC, +2声望, 需声望≥20)', fn: workAuction },
+        { text: '🔙 返回高铁站', fn: ()=>{ state.sceneId = 'highRail'; pushJournal('返回高铁站'); render(); } },
+        { text: '🚪 返回威湖行馆站 (需车票)', fn: ()=>{
+            if (!state.inventory.includes('trainTicket') && !state.inventory.includes('firstClassTicket')) {
+                showModal('你没有车票，无法乘车。请先购票。', [{txt:'了解',cb:closeModal}]);
+                return;
+            }
+            let ticketType = state.inventory.includes('firstClassTicket')?'first':'second';
+            if (ticketType === 'first') state.inventory = state.inventory.filter(i=>i!=='firstClassTicket');
+            else state.inventory = state.inventory.filter(i=>i!=='trainTicket');
+            pushJournal('使用车票返回威湖行馆站');
+            arriveAtStation('weihu', ticketType);
+        } }
+    ]
+};
+
+// ---------- 实时时间核心 ----------
+let timeTimer = null;
+
+function startTimer() {
+    if (timeTimer) clearInterval(timeTimer);
+    timeTimer = setInterval(() => {
+        addGameMinutes(1); // 每0.5秒加1分钟
+    }, 500);
+}
+
+// 统一增加游戏分钟，处理跨天重置（打工、洗澡标记）
+function addGameMinutes(inc) {
+    let oldDay = state.day;
+    state.gameMinutes += inc;
+    let newDay = Math.floor(state.gameMinutes / (24*60)) + 1;
+    if (newDay > oldDay) {
+        state.day = newDay;
+        // 新的一天：重置打工次数，洗澡标记不清除（showerDay记录上次洗澡的天，由洗澡函数自己控制）
+        state.flags.workCount = 0;
+    }
+    render();
+}
+
+// 24小时制显示
+function formatGameTime() {
+    let totalMinutes = state.gameMinutes;
+    let day = Math.floor(totalMinutes / (24*60)) + 1;
+    let minutesInDay = totalMinutes % (24*60);
+    let hours = Math.floor(minutesInDay / 60);
+    let mins = minutesInDay % 60;
+    return `第 ${day} 天 ${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}`;
+}
+
+// 检查高铁运营时间 (6:00-11:00,13:00-23:59)
+function isTrainOperating() {
+    let minutesInDay = state.gameMinutes % (24 * 60); // 当天已过分钟数（0~1439）
+    // 第一时段：00:00 ~ 11:30（0 ~ 690分钟）
+    // 第二时段：17:00 ~ 23:00（1020 ~ 1380分钟）
+    return (minutesInDay <= 690) || (minutesInDay >= 1020 && minutesInDay <= 1380);
+}
+
+// 不夜城开放 23:00-2:00
+function isNightCityOpen() {
+    let minutesInDay = state.gameMinutes % (24*60);
+    let h = minutesInDay / 60;
+    return (h >= 23 || h < 2);
+}
+
+// 移除原有的advanceTime，所有操作直接调用addGameMinutes推进时间（但保留原有调用结构，只改实现）
+// 为了尽量不改动原函数调用，保留advanceTime名字但重定向到addGameMinutes
+function advanceTime(minutes) {
+    addGameMinutes(minutes);
+}
+// 注意：原advanceTime内部有跨天重置，现在已由addGameMinutes统一处理，所以安全。
+
+// ---------- 辅助渲染函数 ----------
+const el = id => document.getElementById(id);
+function formatYC(n){ return n.toLocaleString(); }
+function pushJournal(text){ state.journal.push(text); if (state.journal.length>30) state.journal.shift(); render(); }
+
+function render() {
+    el('dayBadge').textContent = formatGameTime();
+
+    const sc = scenes[state.sceneId];
+    if (!sc) return;
+    el('sceneTitle').textContent = sc.title;
+    el('sceneDesc').textContent = sc.desc;
+    el('locationBadge').textContent = sc.title;
+
+    const actionsDiv = el('actions');
+    actionsDiv.innerHTML = '';
+    sc.actions.forEach(a => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        let text = a.text;
+        // 针对高铁站购票/乘车按钮停运禁用
+        if (state.sceneId === 'highRail' && (a.text.includes('购票') || a.text.includes('乘车'))) {
+            if (!isTrainOperating()) {
+                btn.classList.add('disabled');
+                text += ' (暂停服务)';
+            }
+        }
+        // 针对不夜城按钮，非开放时间禁用（除返回外）
+        if (state.sceneId === 'nightCity' && !a.text.includes('返回') && !a.text.includes('车票')) {
+            if (!isNightCityOpen()) {
+                btn.classList.add('disabled');
+                text += ' (打烊)';
+            }
+        }
+        // 客房内睡觉按钮额外判断时间
+        if (state.sceneId === 'hotelRoom' && a.text.includes('睡觉')) {
+            let h = (state.gameMinutes % (24*60)) / 60;
+            if (h < 19) {
+                btn.classList.add('disabled');
+                text = '😴 现在睡觉？翻来覆去睡不着';
+            }
+        }
+        // 客房洗澡按钮：一天只能洗一次
+        if (state.sceneId === 'hotelRoom' && a.text.includes('洗澡')) {
+            if (state.flags.showerDay === state.day) {
+                btn.classList.add('disabled');
+                text = '🚿 今日已洗过澡';
+            }
+        }
+        btn.textContent = text;
+        btn.onclick = () => { if (!btn.classList.contains('disabled')) a.fn(); };
+        actionsDiv.appendChild(btn);
+    });
+
+    // 物品栏
+    const inv = el('inventory');
+    inv.innerHTML = '';
+    state.inventory.forEach(id => {
+        const it = items[id];
+        const d = document.createElement('div');
+        d.className = 'inv-item';
+        d.textContent = (it ? it.name : id);
+        inv.appendChild(d);
+    });
+    const moneyDiv = document.createElement('div');
+    moneyDiv.className = 'inv-item';
+    moneyDiv.id = 'moneyDiv';
+    moneyDiv.textContent = `💳 余额: ${formatYC(state.money)} YC`;
+    inv.appendChild(moneyDiv);
+
+    el('loanDisplay').textContent = formatYC(state.loan) + ' YC';
+    let leanTxt = '中立';
+    if (state.flags.leaning === 'LK') leanTxt = '龙口西';
+    else if (state.flags.leaning === 'ST') leanTxt = '散庭';
+    el('leaningDisplay').textContent = leanTxt;
+    el('repDisplay').textContent = state.flags.tycoonRep;
+    let borderTxt = '平静';
+    if (state.choices.provokedBorder > 2) borderTxt = '紧张';
+    else if (state.choices.provokedBorder > 0) borderTxt = '微澜';
+    el('borderState').textContent = borderTxt;
+
+    const clueDom = el('clueTags');
+    clueDom.innerHTML = '';
+    if (state.clues.length === 0) {
+        clueDom.textContent = '（暂无线索）';
+    } else {
+        state.clues.forEach(c => {
+            const span = document.createElement('div');
+            span.style.display = 'inline-block';
+            span.style.margin = '4px';
+            span.style.padding = '6px 10px';
+            span.style.borderRadius = '14px';
+            span.style.background = '#ece3d3';
+            span.style.border = '1px solid #847560';
+            span.textContent = clues[c].name;
+            clueDom.appendChild(span);
+        });
+    }
+
+    const tlist = el('taskList');
+    if (state.clues.length === 0 && state.journal.length === 0) {
+        tlist.innerHTML = '— 无 — <span class="muted">（探索各处）</span>';
+    } else {
+        const lines = [];
+        if (state.clues.length) lines.push('线索：' + state.clues.map(c=>clues[c].name).join('、'));
+        if (state.journal.length) lines.push('日志：' + state.journal.slice(-3).join(' / '));
+        tlist.innerHTML = lines.join('<br/>');
+    }
+    el('taskCount').textContent = `${state.clues.length} 条线索`;
+}
+
+// ----- 模态框 -----
+function showModal(html, buttons){
+    const root = el('modalRoot');
+    root.style.display = 'block';
+    root.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'modal';
+    const inner = document.createElement('div');
+    inner.className = 'box';
+    inner.innerHTML = `<div style="white-space:pre-wrap;color:#0f1f22">${html}</div><div style="height:12px"></div>`;
+    const btnRow = document.createElement('div');
+    btnRow.style.display='flex';
+    btnRow.style.gap='8px';
+    (buttons||[]).forEach(b=>{
+        const bt = document.createElement('button');
+        bt.className='close';
+        bt.textContent = b.txt || '确认';
+        bt.onclick = ()=>{ if (b.cb) b.cb(); closeModal(); };
+        btnRow.appendChild(bt);
+    });
+    if (!buttons || buttons.length===0){
+        const bt = document.createElement('button');
+        bt.className='close';
+        bt.textContent='关闭';
+        bt.onclick = closeModal;
+        btnRow.appendChild(bt);
+    }
+    inner.appendChild(btnRow);
+    box.appendChild(inner);
+    root.appendChild(box);
+}
+function closeModal(){ const root = el('modalRoot'); root.style.display='none'; root.innerHTML=''; }
+
+// ----- 打工赚钱 (使用advanceTime改为addGameMinutes) -----
+function checkWorkLimit() {
+    if (state.flags.workCount >= 3) {
+        showModal('你今天已经打工太多次了，休息一下吧。', [{txt:'好的',cb:closeModal}]);
+        return false;
+    }
+    return true;
+}
+
+function workDish() {
+    if (!checkWorkLimit()) return;
+    state.money += 200;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 1);
+    state.flags.workCount++;
+    pushJournal('在西餐厅洗碗，赚了200YC，声望+1');
+    showModal('你洗了一小时盘子，手都泡皱了，但赚了200YC。', [{txt:'继续',cb:closeModal}]);
+    addGameMinutes(5);
+}
+function workNewspaper() {
+    if (!checkWorkLimit()) return;
+    if (state.flags.leaning !== 'LK' && !state.clues.includes('twoWars')) {
+        showModal('报社编辑看了你一眼：“你懂龙口西历史吗？先去博物长廊学习学习吧。”', [{txt:'尴尬离开',cb:closeModal}]);
+        return;
+    }
+    state.money += 250;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 1);
+    state.flags.workCount++;
+    pushJournal('给龙口西报社投稿，赚了250YC，声望+1');
+    showModal('你写了一篇关于威湖的小文章，编辑很满意，给了你稿费。', [{txt:'继续',cb:closeModal}]);
+    addGameMinutes(10);
+}
+function workSanting() {
+    if (!checkWorkLimit()) return;
+    if (state.flags.leaning !== 'ST' && !state.inventory.includes('oldCoin')) {
+        showModal('散庭重工的HR看了看你：“你不是散庭人，也没有本地工作经验……”', [{txt:'好吧',cb:closeModal}]);
+        return;
+    }
+    state.money += 300;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 1);
+    state.flags.workCount++;
+    pushJournal('在散庭重工做兼职，赚了300YC，声望+1');
+    showModal('你帮忙测试电磁枪模型，虽然只是搬电池，但感觉挺酷的。', [{txt:'继续',cb:closeModal}]);
+    addGameMinutes(20);
+}
+function workAuction() {
+    if (!checkWorkLimit()) return;
+    if (state.flags.tycoonRep < 20) {
+        showModal('拍卖行经理摆摆手：“我们只招有财阀经验的人。”', [{txt:'好吧',cb:closeModal}]);
+        return;
+    }
+    state.money += 500;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 2);
+    state.flags.workCount++;
+    pushJournal('在拍卖行做临时工，赚了500YC，声望+2');
+    showModal('你帮忙搬拍卖品，亲眼看到一个学生刷了黑玉卡买走一件古董。', [{txt:'继续',cb:closeModal}]);
+    addGameMinutes(20);
+}
+
+// ----- 批量购买（不夜城）-----
+function showQuantityPicker(itemName, basePrice, repGain, minQty, callback) {
+    let qty = minQty;
+    const html = `
+        <div style="text-align:center;">
+            <h3>购买 ${itemName}</h3>
+            <p>单价: ${basePrice} YC / 声望 +${repGain} 每份</p>
+            <div class="number-picker">
+                <button onclick="window.qtyChange(-1, ${minQty})">−</button>
+                <span id="qtyDisplay">${qty}</span>
+                <button onclick="window.qtyChange(1, ${minQty})">+</button>
+            </div>
+            <p>总价: <span id="totalPrice">${basePrice * qty}</span> YC</p>
+            <p>总声望: +${repGain * qty}</p>
+        </div>
+    `;
+    window.qtyChange = (delta, min) => {
+        let newQty = qty + delta;
+        if (newQty < min) newQty = min;
+        qty = newQty;
+        document.getElementById('qtyDisplay').innerText = qty;
+        document.getElementById('totalPrice').innerText = basePrice * qty;
+    };
+    showModal(html, [
+        { txt: '购买', cb: () => {
+            let total = basePrice * qty;
+            if (state.money < total) {
+                showModal('余额不足', [{txt:'重新选择',cb:()=>showQuantityPicker(itemName, basePrice, repGain, minQty, callback)}]);
+                return;
+            }
+            state.money -= total;
+            state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + repGain * qty);
+            pushJournal(`购买 ${qty} 份 ${itemName}，花费 ${total} YC，声望+${repGain*qty}`);
+            showModal(`购买成功！你获得了 ${qty} 份 ${itemName}。`, [{txt:'继续',cb:closeModal}]);
+            addGameMinutes(1 * qty);
+            render();
+            if (callback) callback();
+        } },
+        { txt: '取消', cb: closeModal }
+    ]);
+}
+function buySkewer() {
+    if (!isNightCityOpen()) { showModal('不夜城已经打烊了。', [{txt:'离开',cb:closeModal}]); return; }
+    showQuantityPicker('羊肉串', 30, 1, 5, null);
+}
+function buyMilkTea() {
+    if (!isNightCityOpen()) { showModal('不夜城已经打烊了。', [{txt:'离开',cb:closeModal}]); return; }
+    showQuantityPicker('奶茶', 28, 1, 1, null);
+}
+function buyWings() {
+    if (!isNightCityOpen()) { showModal('不夜城已经打烊了。', [{txt:'离开',cb:closeModal}]); return; }
+    showQuantityPicker('奥尔良烤翅', 45, 1, 1, null);
+}
+function buyBook() {
+    if (!isNightCityOpen()) { showModal('不夜城已经打烊了。', [{txt:'离开',cb:closeModal}]); return; }
+    if (state.money < 200) { showModal('余额不足', [{txt:'知道了',cb:closeModal}]); return; }
+    state.money -= 200;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 2);
+    if (!state.inventory.includes('oldCoin')) state.inventory.push('oldCoin');
+    pushJournal('购买历史书，获赠旧YC硬币，花费200YC，声望+2');
+    showModal('你买下历史书，店主送了一枚旧YC硬币作为小礼物。', [{txt:'收藏',cb:closeModal}]);
+    addGameMinutes(0);
+}
+function bankOpenAccount() {
+    showModal('世界银行：外部居民可开户，初始限额 1,000,000 YC（需居留证）。是否开户？', [
+        {txt:'开户', cb: ()=>{
+            function bankOpenAccount() {
+    if (!state.inventory.includes('residentCard')) {
+        showModal('开户失败：需要居留证。', [{txt:'明白', cb: closeModal}]);
+        return;
+    }
+    // 开户成功
+    pushJournal('在世界银行开户');
+    // 直接显示成功模态，无需二次确认
+    showModal('开户成功！世界银行账户已创建。\n提醒：银行卡分等级，黑玉/彩玉为富豪专属。', [{txt:'知道了', cb: closeModal}]);
+    // 如果仍想保留微小时间推进，可取消下一行注释；否则删除或注释掉
+    // addGameMinutes(5);
+}
+        }},
+        {txt:'取消', cb: closeModal}
+    ]);
+}
+function antiqueShop() {
+    showModal('你走进一家文物店，架子上摆着旧徽章、老照片。老板说：“这些都是博物长廊的复制品，真品都在那边。”', [{txt:'离开',cb:closeModal}]);
+    addGameMinutes(1);
+}
+function tryAuction() {
+    if (state.flags.tycoonRep < 30) {
+        showModal('你的财阀声望不足30，无法进入拍卖行。多在不夜城消费吧。', [{txt:'好吧',cb:closeModal}]);
+        return;
+    }
+    if (!state.clues.includes('zhaoMing')) state.clues.push('zhaoMing');
+    pushJournal('进入拍卖行，目睹赵铭刷黑玉卡');
+    showModal('拍卖行门口，一个学生刷出黑玉卡，余额 1189亿 YC。服务生恭敬道：“赵少，您请。”你见证了财阀的排场。', [{txt:'惊叹',cb:closeModal}]);
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 5);
+    addGameMinutes(3);
+}
+
+// ----- 客房新功能 -----
+function gotoHotelRoom() {
+    state.sceneId = 'hotelRoom';
+    pushJournal('前往酒店客房');
+    render();
+}
+function takeShower() {
+    if (state.flags.showerDay === state.day) {
+        showModal('你今天已经洗过澡了。', [{txt:'好吧',cb:closeModal}]);
+        return;
+    }
+    state.flags.showerDay = state.day;
+    state.flags.tycoonRep = Math.min(100, state.flags.tycoonRep + 1);
+    pushJournal('洗了个热水澡，感觉神清气爽，声望+1');
+    showModal('你舒舒服服地洗了个澡，浑身散发着香味。', [{txt:'舒服',cb:closeModal}]);
+    addGameMinutes(10); // 洗澡耗时10分钟
+}
+function sleepInRoom() {
+    let h = (state.gameMinutes % (24*60)) / 60;
+    if (h < 19) {
+        showModal('你翻来覆去，怎么都睡不着……也许还太早了。', [{txt:'起床',cb:closeModal}]);
+        return;
+    }
+    // 显示入睡中模态，3秒后跳转次日7:00
+    showModal('你躺在床上，很快进入梦乡……（3秒后醒来）', []);
+    // 暂停计时器，防止时间继续走
+    if (timeTimer) clearInterval(timeTimer);
+    setTimeout(() => {
+        // 计算次日7:00
+        let currentDay = Math.floor(state.gameMinutes / (24*60));
+        let target = (currentDay + 1) * 24*60 + 7*60; // 次日07:00
+        state.gameMinutes = target;
+        // 更新day和重置workCount (addGameMinutes会处理，但需手动触发)
+        let newDay = Math.floor(state.gameMinutes / (24*60)) + 1;
+        if (newDay > state.day) {
+            state.day = newDay;
+            state.flags.workCount = 0;
+        }
+        // 关闭模态，重启计时器，重新渲染
+        closeModal();
+        startTimer();
+        pushJournal('一觉醒来，已是第二天清晨。');
+        render();
+    }, 3000);
+}
+
+// ----- 原有动作（改为使用addGameMinutes推进，删除advanceTime内直接调用，但保留函数名）-----
+function talkReceptionist(){
+    pushJournal('与前台交谈：前台认出你是 16 号外部居民，提醒海军演习与游艇会边界。');
+    showModal('前台小姐微笑：“16号外部居民？稀客。需要帮您预约高铁吗？或者您想知道今天的海军演习时间？”', [{txt:'好的，谢谢',cb:closeModal},{txt:'我先看看',cb:closeModal}]);
+    addGameMinutes(0);
+}
+function talkTeacher(){
+    pushJournal('与老师搭话：老师提到学生自治的海军、金融与不夜城。');
+    if (!state.flags.metTeacher) {
+        state.flags.metTeacher = true;
+        showModal('老师合上笔记本：“第一次来？这里的小学生自己建立了国家、海军，甚至银行。晚上可以去不夜城看看。你对龙口西和散庭有什么初步倾向吗？”',
+            [{txt:'我更倾向龙口西',cb:()=>{ chooseLeaning('LK'); }},
+             {txt:'散庭更有意思',cb:()=>{ chooseLeaning('ST'); }},
+             {txt:'保持中立',cb:()=>{ chooseLeaning(null); }}]);
+    } else {
+        showModal('老师微笑：“你已经知道不少了，继续探索吧。”', [{txt:'好',cb:closeModal}]);
+    }
+    addGameMinutes(1);
+}
+function chooseLeaning(side){
+    state.flags.leaning = side;
+    let msg = side==='LK'?'你倾向于龙口西国民联邦国。':(side==='ST'?'你倾向于散庭共和国。':'你决定保持中立，观察两者。');
+    pushJournal('选择了倾向：'+(side==='LK'?'龙口西':(side==='ST'?'散庭':'中立')));
+    showModal(msg, [{txt:'确认',cb:closeModal}]);
+    render();
+}
+function gotoLake(){ state.sceneId = 'lakeEntrance'; pushJournal('前往游艇会/湖边。'); addGameMinutes(5); render(); }
+function gotoMuseum(){
+    if (!state.flags.canEnterMuseum) {
+        showModal('门口挂着“今日周一，本馆闭馆”，但宪兵表示你若出示居留证可获入场许可。', [{txt:'出示居留证',cb:()=>{ showResidentCard(); closeModal(); }},{txt:'稍后再来',cb:closeModal}]);
+        return;
+    }
+    state.sceneId = 'museumHall';
+    pushJournal('进入博物长廊（地面层）。');
+    addGameMinutes(1);
+    render();
+}
+function backToHotel(){ state.sceneId = 'hotelLobby'; pushJournal('返回酒店大堂。'); addGameMinutes(5); render(); }
+function showResidentCard(){
+    if (state.inventory.includes('residentCard')) {
+        state.flags.canEnterMuseum = true;
+        pushJournal('向宪兵出示居留证，获得博物长廊进入许可。');
+        showModal('你出示居留证。小宪兵核对后点头：“外部居民，可以进入。请勿跨越铁线。”', [{txt:'致谢',cb:closeModal}]);
+        addGameMinutes(1);
+    } else {
+        showModal('你摸了摸口袋，发现居留证不见了！宪兵表示无法放行。', [{txt:'慌乱寻找',cb:closeModal}]);
+    }
+    render();
+}
+function examineIronLine(){
+    if (!state.clues.includes('ironLine')) {
+        state.clues.push('ironLine');
+        pushJournal('观察铁线，记录其为游艇会与博物长廊之间的分界。');
+    }
+    showModal('铁线嵌入石砖，蚀刻有“威海卫湖区边界线，请勿随意穿越”。这是象征性的边界。', [{txt:'记录',cb:closeModal}]);
+    addGameMinutes(1);
+    render();
+}
+function walkCoast(){
+    pushJournal('沿湖岸散步，看到游艇编号与舰队编队。');
+    showModal('你沿着湖岸走，注意到游艇上写有 S1127-1 等编号，远处有小艇在演习。', [{txt:'继续',cb:closeModal},{txt:'返回',cb:backToHotel}]);
+    addGameMinutes(1);
+    render();
+}
+function lingerBorder(){
+    let r = Math.random();
+    if (r < 0.4) {
+        showModal('你在湖边坐了一会儿，只看到几只水鸟飞过。边界依旧平静。', [{txt:'起身',cb:closeModal}]);
+    } else if (r < 0.7) {
+        state.choices.provokedBorder += 1;
+        pushJournal('目击边界摩擦：双方激光互射，喊话声此起彼伏。');
+        if (!state.clues.includes('borderIncident')) state.clues.push('borderIncident');
+        showModal('突然，湖面上传来喊话声：“你们已进入我方领海！”紧接着激光束交错，一艘皮划艇被钩锁掀翻。你目睹了一次标准摩擦。', [{txt:'记录',cb:closeModal}]);
+    } else {
+        if (state.flags.leaning) {
+            let side = state.flags.leaning === 'LK' ? '龙口西' : '散庭';
+            showModal(`一名宪兵走过来，注意到你的居留证后说：“${side}的居民？最近边界敏感，请勿靠近铁线。”`, [{txt:'配合',cb:closeModal}]);
+        } else {
+            showModal('一名宪兵检查了你的居留证，提醒你注意边界。', [{txt:'点头',cb:closeModal}]);
+        }
+    }
+    addGameMinutes(1);
+    render();
+}
+function readDeclaration(){
+    if (!state.clues.includes('zhaoWan')) state.clues.push('zhaoWan');
+    pushJournal('阅读《龙口西国民联邦国建国宣言》，署名赵婉等。');
+    showModal('《建国宣言》纸张泛黄，署名：赵婉、陈博翰、钱伟烨、任广岽。', [{txt:'记录',cb:closeModal}]);
+    addGameMinutes(1);
+    render();
+}
+function examineIronBlock(){
+    if (!state.clues.includes('electromagnetic')) state.clues.push('electromagnetic');
+    pushJournal('观察电磁纪念铁块，读到铭文。');
+    showModal('一块手掌大的铁块，中间有穿透圆孔。铭文：“龙口4年12月3日 电磁威慑研发成功纪念”。旁边还有散庭版的纪念块。', [{txt:'继续',cb:closeModal}]);
+    addGameMinutes(5);
+    render();
+}
+function lookAtYu(){
+    pushJournal('看于凯帆抽象肖像（货币之父）。');
+    showModal('一幅抽象肖像，下方注记：于凯帆——“货币之父”。YC 与银行体系的故事由此展开。', [{txt:'继续',cb:closeModal}]);
+    addGameMinutes(5);
+    render();
+}
+function gotoMuseumUnderground(){
+    state.sceneId = 'museumUnderground';
+    state.flags.visitedMuseumUnderground = true;
+    pushJournal('进入博物长廊地下层，见到赵婉画像与黑色石碑。');
+    addGameMinutes(5);
+    render();
+}
+function readStele(){
+    if (!state.clues.includes('twoWars')) state.clues.push('twoWars');
+    pushJournal('阅读黑碑：记录两国战争与和平愿景。');
+    showModal('黑色石碑刻文：\n“4年中，我们经历了战争、分歧、争锋与和平。愿以后的10年中，两国和平永远不变。愿以后的100年中……赵婉小姐永远被人传颂。”', [{txt:'沉思',cb:closeModal}]);
+    if (!state.choices.signedPeace) {
+        state.choices.signedPeace = true;
+        state.flags.peaceDeed = true;
+    }
+    addGameMinutes(10);
+    render();
+}
+function gazeZhaoWan(){
+    if (!state.clues.includes('zhaoWan')) state.clues.push('zhaoWan');
+    pushJournal('凝视赵婉画像。');
+    showModal('画像中的少女白发红瞳，目光宁静。许多游人将其称为“赵小姐”。', [{txt:'继续',cb:closeModal}]);
+    addGameMinutes(5);
+    render();
+}
+function backToMuseumMain(){ state.sceneId = 'museumHall'; pushJournal('返回地面层。'); addGameMinutes(5); render(); }
+function gotoHighRail() {
+    state.sceneId = 'highRail';
+    pushJournal('前往高铁售票大厅');
+    addGameMinutes(1);
+    render();
+}
+// 高铁购票、抵达等函数（略作调整，将advanceTime替换为addGameMinutes，但原函数内已调用advanceTime，我们统一改名为addGameMinutes，为了省篇幅保持函数名不变，但内部addGameMinutes）
+function showStationSelectionForSecond() { /* 内容不变，只改内部时间调用为addGameMinutes */ 
+    if (!isTrainOperating()) { showModal('高铁已停止运营', [{txt:'知道了',cb:closeModal}]); return; }
+    if (state.money < 8000) { showModal('余额不足8000YC', [{txt:'知道了',cb:closeModal}]); return; }
+    let html = '<div style="font-weight:bold;margin-bottom:8px;">请选择目的地（二等座8000YC）</div><div class="select-station">';
+    const stations = [ {id:'zhongcheng', name:'中城东站'},{id:'santing', name:'散庭南站'},{id:'woye', name:'沃野中央站'},{id:'shenwu', name:'神武站'},{id:'buye', name:'不夜城南站'},{id:'suibei', name:'穗北站'},{id:'weihai', name:'威海卫湖西站'},{id:'weihu', name:'威湖行馆站'} ];
+    stations.forEach(s => { html += `<div class="station-btn" onclick="purchaseAndRide('${s.id}', 'second')">${s.name}</div>`; });
+    html += '</div>';
+    window.purchaseAndRide = function(stationId, ticketClass) {
+        closeModal();
+        let price = ticketClass === 'second' ? 8000 : 10000;
+        if (state.money < price) { showModal('余额不足', [{txt:'关闭',cb:closeModal}]); return; }
+        state.money -= price;
+        pushJournal(`购买${ticketClass==='second'?'二等座':'一等座'}前往${stationInfo[stationId].name}，支付${price}YC`);
+        arriveAtStation(stationId, ticketClass);
+    };
+    showModal(html, [{txt:'取消', cb:closeModal}]);
+}
+function showStationSelectionForFirst() { /* 类似，略 */ 
+    if (!isTrainOperating()) { showModal('高铁已停止运营', [{txt:'知道了',cb:closeModal}]); return; }
+    if (state.money < 10000) { showModal('余额不足10000YC', [{txt:'知道了',cb:closeModal}]); return; }
+    let html = '<div style="font-weight:bold;margin-bottom:8px;">请选择目的地（一等座10000YC，含肯德基）</div><div class="select-station">';
+    const stations = [ {id:'zhongcheng', name:'中城东站'},{id:'santing', name:'散庭南站'},{id:'woye', name:'沃野中央站'},{id:'shenwu', name:'神武站'},{id:'buye', name:'不夜城南站'},{id:'suibei', name:'穗北站'},{id:'weihai', name:'威海卫湖西站'},{id:'weihu', name:'威湖行馆站'} ];
+    stations.forEach(s => { html += `<div class="station-btn" onclick="purchaseAndRide('${s.id}', 'first')">${s.name}</div>`; });
+    html += '</div>';
+    window.purchaseAndRide = function(stationId, ticketClass) {
+        closeModal();
+        let price = ticketClass === 'second' ? 8000 : 10000;
+        if (state.money < price) { showModal('余额不足', [{txt:'关闭',cb:closeModal}]); return; }
+        state.money -= price;
+        pushJournal(`购买${ticketClass==='second'?'二等座':'一等座'}前往${stationInfo[stationId].name}，支付${price}YC`);
+        arriveAtStation(stationId, ticketClass);
+    };
+    showModal(html, [{txt:'取消', cb:closeModal}]);
+}
+function useTicketToRide() {
+    if (!isTrainOperating()) { showModal('高铁已停止运营', [{txt:'知道了',cb:closeModal}]); return; }
+    let ticketType = null;
+    if (state.inventory.includes('firstClassTicket')) ticketType = 'first';
+    else if (state.inventory.includes('trainTicket')) ticketType = 'second';
+    if (!ticketType) { showModal('你没有任何车票，请先购票。', [{txt:'返回',cb:closeModal}]); return; }
+    let html = '<div style="font-weight:bold;margin-bottom:8px;">请选择目的地（使用已有车票）</div><div class="select-station">';
+    const stations = [ {id:'zhongcheng', name:'中城东站'},{id:'santing', name:'散庭南站'},{id:'woye', name:'沃野中央站'},{id:'shenwu', name:'神武站'},{id:'buye', name:'不夜城南站'},{id:'suibei', name:'穗北站'},{id:'weihai', name:'威海卫湖西站'},{id:'weihu', name:'威湖行馆站'} ];
+    stations.forEach(s => { html += `<div class="station-btn" onclick="rideWithTicket('${s.id}', '${ticketType}')">${s.name}</div>`; });
+    html += '</div>';
+    window.rideWithTicket = function(stationId, ticketType) {
+        closeModal();
+        if (ticketType === 'first') { state.inventory = state.inventory.filter(i => i !== 'firstClassTicket'); }
+        else { state.inventory = state.inventory.filter(i => i !== 'trainTicket'); }
+        pushJournal(`使用车票乘坐高铁前往${stationInfo[stationId].name}`);
+        arriveAtStation(stationId, ticketType);
+    };
+    showModal(html, [{txt:'取消', cb:closeModal}]);
+}
+function arriveAtStation(stationId, ticketClass) {
+    const info = stationInfo[stationId];
+    const sceneId = 'station_' + stationId;
+    let desc = info.desc;
+    if (ticketClass === 'first') { desc += ' 由于你持有一等座票，在车上享用了肯德基套餐，味道不错。'; }
+    let actions = [];
+    if (stationId === 'buye') {
+        actions.push({ text: '🏙️ 前往不夜城五楼/六楼', fn: ()=> { 
+            if (!isNightCityOpen()) { showModal('不夜城已经打烊了（开放时间23:00-2:00），现在进不去。', [{txt:'返回',cb:closeModal}]); return; }
+            state.sceneId = 'nightCity'; pushJournal('从不夜城南站进入不夜城'); addGameMinutes(1); render(); 
+        } });
+    } else if (stationId === 'weihai') {
+        actions.push({ text: '🚤 前往游艇会/湖边', fn: ()=> { state.sceneId = 'lakeEntrance'; pushJournal('从威海卫湖西站前往湖边'); addGameMinutes(1); render(); } });
+        actions.push({ text: '🏛️ 前往博物长廊', fn: ()=> { 
+            if (!state.flags.canEnterMuseum) { showModal('需要先向宪兵出示居留证才能进入博物长廊。', [{txt:'明白',cb:closeModal}]); return; }
+            state.sceneId = 'museumHall'; pushJournal('从威海卫湖西站前往博物长廊'); addGameMinutes(1); render(); 
+        } });
+    } else if (stationId === 'weihu') {
+        actions.push({ text: '🏨 返回威湖行馆酒店', fn: backToHotel });
+    }
+    actions.push({ text: '🚆 返回高铁站', fn: ()=> { state.sceneId = 'highRail'; pushJournal('返回高铁站'); addGameMinutes(10); render(); } });
+    if (stationId !== 'buye' && stationId !== 'weihai' && stationId !== 'weihu') {
+        actions.push({ text: '📸 四处看看', fn: ()=> { showModal(info.desc + ' 你拍了些照片，没什么特别的事发生。', [{txt:'返回',cb:closeModal}]); addGameMinutes(10); } });
+    }
+    const tempScene = { id: sceneId, title: info.name, desc: desc, actions: actions };
+    scenes[sceneId] = tempScene;
+    state.sceneId = sceneId;
+    pushJournal(`抵达${info.name}`);
+    addGameMinutes(5);
+    render();
+}
+// 银行借贷
+function applyLoan() {
+    let maxLoan = 100000 - state.loan;
+    if (maxLoan <= 0) { showModal('你已达到贷款上限（100,000 YC）。', [{txt:'关闭',cb:closeModal}]); return; }
+    let amount = Math.min(50000, maxLoan);
+    state.loan += amount; state.money += amount; state.choices.loanCount++;
+    pushJournal(`申请贷款 ${amount} YC，当前负债 ${state.loan} YC`);
+    showModal(`贷款成功！你获得了 ${amount} YC。记得及时还款，日息5%会影响结局。`, [{txt:'明白',cb:closeModal}]);
+    addGameMinutes(1);
+}
+function repayLoan() {
+    if (state.loan <= 0) { showModal('你没有贷款需要偿还。', [{txt:'关闭',cb:closeModal}]); return; }
+    let maxRepay = Math.min(state.money, state.loan);
+    if (maxRepay <= 0) { showModal('余额不足，无法还款。', [{txt:'关闭',cb:closeModal}]); return; }
+    state.money -= maxRepay; state.loan -= maxRepay;
+    pushJournal(`偿还贷款 ${maxRepay} YC，剩余负债 ${state.loan} YC`);
+    showModal(`还款成功！你偿还了 ${maxRepay} YC。`, [{txt:'好的',cb:closeModal}]);
+    addGameMinutes(1);
+}
+function bankInfo() {
+    showModal(`世界银行账户信息\n余额: ${formatYC(state.money)} YC\n贷款: ${formatYC(state.loan)} YC\n贷款上限: 100,000 YC\n日息: 5% (影响结局)`, [{txt:'关闭',cb:closeModal}]);
+}
+el('loanBtn').onclick = applyLoan;
+el('repayBtn').onclick = repayLoan;
+el('bankInfoBtn').onclick = bankInfo;
+
+// 结局
+function attemptEnding(){
+    let msg = '';
+    if (state.loan > 50000 && !state.choices.signedPeace) {
+        msg = '【破产统派结局】你负债累累，且未参与和平进程，最终被世界银行列入黑名单，无法继续旅行。龙口文明对你关上了大门。';
+    } else if (state.choices.provokedBorder >= 3 && !state.choices.signedPeace) {
+        msg = '【统派结局】由于你多次挑衅边界且拒绝和平象征，统派势力抬头。高铁中断，博物长廊关闭，铁线无人维护。龙口文明陷入冰封。';
+    } else if (state.choices.signedPeace && state.flags.tycoonRep >= 50) {
+        msg = '【财阀和平结局】你以外部居民身份促进和平，同时获得财阀尊重。两国在你离开后签署了永久友好协议，高铁延伸至新大陆。';
+    } else if (state.flags.leaning === 'LK' && state.clues.length > 3) {
+        msg = '【龙口西友好结局】你深入了解了龙口西的历史，得到龙思远总统赠送的芋头糕配方。愿你记住这个联邦。';
+    } else if (state.flags.leaning === 'ST' && state.clues.length > 3) {
+        msg = '【散庭科技结局】你与散庭重工建立了良好关系，获赠电磁枪模型。愿你记住这个科技共和国。';
+    } else {
+        msg = '【普通结局】你结束了威湖之旅，带着对龙口文明的记忆离开。铁线依旧，期待你再次归来。';
+    }
+    showModal(msg + '\n\n游戏结束，感谢游玩。可重新开始继续探索。', [{txt:'重新开始', cb: resetGame}, {txt:'关闭', cb: closeModal}]);
+}
+// 存档/读档/重置
+function saveGame(){
+    const copy = JSON.parse(JSON.stringify(state));
+    localStorage.setItem(SAVE_KEY, JSON.stringify(copy));
+    alert('✅ 进度已保存（本地）。');
+}
+function loadGame(){
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) { alert('未找到存档。'); return; }
+    try {
+        const loaded = JSON.parse(raw);
+        state = loaded;
+        // 兼容旧存档字段
+        if (state.flags.showerDay === undefined) state.flags.showerDay = 0;
+        alert('📖 存档加载成功。');
+        // 重启计时器
+        if (timeTimer) clearInterval(timeTimer);
+        startTimer();
+        render();
+    } catch (e) { alert('加载失败：' + e.message); }
+}
+function resetGame(){
+    if (!confirm('确认要重新开始吗？（将清除当前进度）')) return;
+    state = {
+        day:1, gameMinutes: START_MINUTES, sceneId:'hotelLobby', inventory:['residentCard'],
+        money:30000, loan:0, clues:[],
+        flags:{ metTeacher:false, canEnterMuseum:false, visitedNightCity:false, visitedMuseumUnderground:false,
+                leaning:null, tycoonRep:0, borderEventTriggered:false, auctionUnlocked:false, peaceDeed:false,
+                workCount:0, showerDay:0 },
+        journal:[], choices:{ provokedBorder:0, signedPeace:false, metZhaoMing:false, metLongSiyuan:false, loanCount:0 }
+    };
+    if (timeTimer) clearInterval(timeTimer);
+    startTimer();
+    render();
+    alert('已重置。');
+}
+function openInventory(){
+    let html = '随身物品：\n' + state.inventory.map(i=> (items[i]?items[i].name:i)).join('\n') + '\n\n余额：' + formatYC(state.money) + ' YC';
+    showModal(html, [{txt:'关闭',cb:closeModal}]);
+}
+el('helpBtn').onclick = ()=>{
+    showModal('操作提示：\n- 时间实时流逝（0.5秒=1分钟），24h制。\n- 客房可洗澡（每日一次声望+1）、睡觉（19点后，3秒后到次日7点）。\n- 倾向选择影响事件。\n- 消费增加财阀声望。\n- 边界逗留可能触发事件。\n- 石碑可获得和平象征。\n- 高铁运营6-11,13-24；不夜城23-2点。\n- 打工每天最多3次。', [{txt:'明白',cb:closeModal}]);
+};
+el('endingBtn').onclick = attemptEnding;
+el('saveBtn').onclick = saveGame;
+el('loadBtn').onclick = loadGame;
+el('resetBtn').onclick = resetGame;
+
+// 启动一切
+startTimer();
+render();
+pushJournal('欢迎来到威湖彼岸 1.3 实时版。时间自动流逝，祝您探索愉快！');
+</script>
+</body>
+</html>
