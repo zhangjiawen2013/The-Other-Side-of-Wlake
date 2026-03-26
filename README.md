@@ -1,2 +1,6 @@
 # The-Other-Side-of-Wlake
-（ONLY ON CHINESE）《威湖彼岸》是一款由 Vgames Studios 独立开发的轻量剧情向模拟经营游戏，融合自由探索、资源管理、剧情分支与轻度策略玩法，带你走进一个充满细节与故事的独特世界。 游戏支持本地存档、场景交互、物品系统与有趣的成就系统，纯原生技术构建，轻量化、可直接运行，适合休闲体验与剧情探索。
+《威湖彼岸》是一款由 Vgames Studios 独立开发的轻量剧情向模拟经营游戏，融合自由探索、资源管理、剧情分支与轻度策略玩法，带你走进一个充满细节与故事的独特世界。 游戏支持本地存档、场景交互、物品系统与有趣的成就系统，纯原生技术构建，轻量化、可直接运行，适合休闲体验与剧情探索。
+## License
+This project is licensed under the **CC BY-NC-ND 4.0 International Public License** — see the [LICENSE](LICENSE) file for details.
+
+Only on Chinese.
